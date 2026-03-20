@@ -1,7 +1,10 @@
 # DSGVO Compliance Checker
 
-Open-source Website-Scanner für DSGVO-Konformität — entwickelt von [DSF Consulting](https://github.com/AirFun1311), Fürth/Nürnberg.
+Automatisierter DSGVO-Check für Websites von kleinen und mittleren Unternehmen.
 
+Das Tool analysiert eine Website und zeigt konkrete Datenschutz-Risiken inklusive klarer Handlungsempfehlungen.
+
+Ziel: Abmahnrisiken erkennen und schnell beheben.
 ## Was das Tool prüft
 
 - HTTPS-Verschlüsselung
