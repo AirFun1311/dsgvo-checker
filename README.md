@@ -8,20 +8,40 @@ Ziel: Abmahnrisiken erkennen und systematisch beheben.
 
 ---
 
+## Beispiel Analyse
+
+Website: beispiel-firma.de  
+
+Risk Score: 62 (MITTEL)
+
+Ergebnisse:
+- HTTPS: OK  
+- Cookie Banner: FEHLT  
+- Datenschutzerklärung: OK  
+- SSL-Zertifikat: OK  
+
+Bewertung:  
+Mittleres Risiko – konkrete Abmahngefahr durch fehlenden Cookie-Banner (häufige Fehlerquelle).
+
+Empfehlung:  
+→ Cookie Consent Tool implementieren (z. B. Borlabs oder Cookiebot)
+
+---
+
 ## Überblick
 
-Der DSGVO Compliance Checker ist ein praktisches Analyse-Tool zur schnellen Bewertung von Webseiten im Hinblick auf grundlegende Datenschutzanforderungen.
+Schnelle Analyse von Webseiten auf grundlegende DSGVO-Risiken.
 
-Das Ergebnis ist kein technisches Rauschen, sondern eine klare Risiko-Einschätzung mit direkt umsetzbaren Maßnahmen.
+Klare Bewertung statt technischem Output.
 
 ---
 
 ## Was das Tool prüft
 
-- HTTPS-Verschlüsselung  
-- Vorhandensein einer Datenschutzerklärung  
-- Cookie-Banner Implementierung  
-- SSL-Zertifikat Gültigkeit  
+- HTTPS-Verschlüsselung (Grundschutz der Datenübertragung)  
+- Vorhandensein einer Datenschutzerklärung (rechtlich erforderlich)  
+- Cookie-Banner Implementierung (häufige Abmahnquelle)  
+- SSL-Zertifikat Gültigkeit (technische Sicherheit)  
 
 ---
 
@@ -35,4 +55,4 @@ Das Ergebnis ist kein technisches Rauschen, sondern eine klare Risiko-Einschätz
 ```bash
 git clone https://github.com/AirFun1311/dsgvo-checker.git
 cd dsgvo-checker
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
