@@ -1,9 +1,10 @@
 <div align="center">
 
-# DSGVO-Prüfsystem & Technische Audit-Engine
+# DSGVO-Checker
 
-### Automatisiertes Prüfsystem für Webseiten-Datenschutz und technische IT-Sicherheit
-**Entwickelt für den deutschen Mittelstand, Datenschutzbeauftragte, Handwerksbetriebe und Webagenturen**
+### Webseiten prüfen. Risiken finden. Abmahnungen verhindern.
+**Automatische Datenschutz- und Sicherheitsanalyse für Unternehmen, Handwerk & Webagenturen.**
+
 
 [![CI Qualitaetspipeline](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
 [![CodeQL Sicherheitsanalyse](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
@@ -16,13 +17,14 @@
 [![Lizenz: Kommerziell](https://img.shields.io/badge/Lizenz-Kommerziell%20Source--Available-blue.svg)](LICENSE)
 
 <p align="center">
-  <strong>Praxiserprobtes, deterministisches Prüfwerkzeug für deutsche Webseiten.</strong><br>
-  Prüft Webauftritte sekundenschnell auf DSGVO-Verstöße, unerlaubte US-Tracker, externe Schriftarten-Abflüsse (§ 25 TDDDG) und fehlende Verschlüsselung (Art. 32 DSGVO).
+  <strong>1 Klick. 10 Sekunden. Volle Klarheit.</strong><br>
+  Prüft jede Website sofort auf Google-Fonts-Abflüsse, unzulässige Cookies vor Einwilligung (§ 25 TDDDG) und fehlende Verschlüsselung (Art. 32 DSGVO).
 </p>
 
-[Schnellstart](#schnellstart) • [Lizenz & Preise](#lizenzierung--konditionen) • [Funktionsweise](#funktionsweise--architektur) • [Kommandozeile](#kommandozeilen-schnittstelle-cli) • [Rechtliche Grundlagen](#gesetzliche-pruefungsbereiche)
+[Schnellstart](#schnellstart) • [Preise & Lizenzen](#lizenzierung--preise) • [Funktionsweise](#funktionsweise--architektur) • [Kommandozeile](#kommandozeilen-schnittstelle-cli)
 
 </div>
+
 
 ---
 
