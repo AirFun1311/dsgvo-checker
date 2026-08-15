@@ -615,8 +615,14 @@ class DSGVOReportPDF:
 # CONVENIENCE
 # =============================================================================
 
-def generate_report(scan_data: dict, filepath: str):
-    """PDF-Report aus Scan-Daten generieren."""
-    report = DSGVOReportPDF(scan_data)
+def generate_report(scan_data, filepath: str):
+    """PDF-Report aus Scan-Daten (dict oder ScanResult) generieren."""
+    data = scan_data.to_dict() if hasattr(scan_data, "to_dict") else (scan_data if isinstance(scan_data, dict) else scan_data.__dict__)
+    report = DSGVOReportPDF(data)
     report.build(filepath)
     return filepath
+
+
+# Alias for backward and forward compatibility
+generate_pdf_report = generate_report
+
