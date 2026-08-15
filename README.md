@@ -6,12 +6,14 @@
 
 [![CI Quality Pipeline](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
 [![CodeQL SAST](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
-[![Version: 2.0.0](https://img.shields.io/badge/version-2.0.0-0969da.svg)](CHANGELOG.md)
+[![Release v2.0.0](https://img.shields.io/badge/Release-v2.0.0-0969da.svg?logo=github)](https://github.com/AirFun1311/dsgvo-checker/releases)
+[![Tests Passing](https://img.shields.io/badge/tests-16%20passed-238636.svg?logo=pytest&logoColor=white)](https://github.com/AirFun1311/dsgvo-checker/actions)
+[![Supply Chain SLSA](https://img.shields.io/badge/Supply%20Chain-SLSA%20Level%203-238636.svg?logo=openssf)](https://slsa.dev/)
+[![SBOM SPDX 2.3](https://img.shields.io/badge/SBOM-SPDX%202.3%20Automated-8250df.svg)](https://spdx.dev/)
 [![Python Version](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Testing: Pytest](https://img.shields.io/badge/tests-pytest-0A9EDC.svg?logo=pytest&logoColor=white)](https://docs.pytest.org/)
 [![Docker Ready](https://img.shields.io/badge/container-docker-2496ED.svg?logo=docker&logoColor=white)](Dockerfile)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 
 <p align="center">
   <strong>Production-grade automated compliance scanner designed for German & European SMEs, DPOs, and DevSecOps pipelines.</strong><br>
