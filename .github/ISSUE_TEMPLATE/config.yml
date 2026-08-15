@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability Reporting
+    url: https://github.com/AirFun1311/dsgvo-checker/security/advisories/new
+    about: Report security vulnerabilities privately via GitHub Security Advisories or direct maintainer email.
+  - name: Technical Discussions
+    url: https://github.com/AirFun1311/dsgvo-checker/discussions
+    about: General technical discussions and compliance architecture Q&A.

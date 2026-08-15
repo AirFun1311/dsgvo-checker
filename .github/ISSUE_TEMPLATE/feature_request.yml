@@ -1,0 +1,54 @@
+name: Feature Request
+description: Propose an enhancement or architectural extension for the verification engine
+title: "[FEAT]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide technical context to assist evaluation and prioritization.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: Concise summary of the requested capability.
+      placeholder: e.g., Implement signature detector for TikTok Pixel
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Definition & Regulatory Context
+      description: Specific compliance gap, technical limitation, or statutory requirement.
+      placeholder: Technical justification and motivation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Implementation
+      description: Architectural details, CLI options, or scanner logic.
+      placeholder: Proposed interface and behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Approaches Considered
+      description: Alternative solutions or workarounds.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Verification Checklist
+      options:
+        - label: I have verified this is not a duplicate proposal.
+          required: true
+        - label: I am willing to submit a pull request for this feature.
+          required: false

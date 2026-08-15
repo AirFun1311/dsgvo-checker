@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dsgvo-checker-web
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dsgvo-checker-cli
+    entrypoint: ["python", "run_scan.py"]
+    volumes:
+      - ./reports:/app/reports

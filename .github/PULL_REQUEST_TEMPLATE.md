@@ -1,12 +1,33 @@
-## 📋 Description of Changes
+## Description
 
-Please include a summary of the change and which issue is fixed or feature added.
+Provide a technical summary of the proposed changes.
+
+Fixes # (reference issue number)
 
 ---
 
-## 🧪 Quality Checklist
+## Type of Change
 
-- [ ] I have run `pytest tests/ -v` and all tests pass.
-- [ ] I have run `flake8 .` / `ruff check .` with zero linting errors.
-- [ ] I have updated documentation / README if introducing new features or tracker rules.
-- [ ] No sensitive credentials or API tokens are checked in.
+- [ ] Bug fix (non-breaking change resolving an issue)
+- [ ] New feature (non-breaking change adding functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] Documentation update
+- [ ] Security hardening or vulnerability fix
+- [ ] Code refactoring / performance optimization
+
+---
+
+## Quality Assurance & Verification
+
+- [ ] Unit tests added/updated in `tests/`
+- [ ] All tests passing locally (`pytest tests/ -v`)
+- [ ] Linting and formatting passing (`ruff check . && ruff format --check .`)
+- [ ] Security scan passing (`bandit -r . -ll -ii`)
+
+---
+
+## Compliance Checklist
+
+- [ ] Code complies with project [Contributing Guidelines](CONTRIBUTING.md).
+- [ ] Commit history adheres to [Conventional Commits](https://www.conventionalcommits.org/).
+- [ ] Technical documentation updated where appropriate.

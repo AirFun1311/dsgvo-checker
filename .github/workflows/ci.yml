@@ -1,19 +1,59 @@
-name: CI & Quality Pipeline
+name: CI & DevSecOps Quality Pipeline
 
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
-    name: Test & Quality (Python ${{ matrix.python-version }})
+  lint-and-typecheck:
+    name: Code Quality & Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run Astral Ruff Linter
+        run: |
+          ruff check .
+
+      - name: Check Code Formatting
+        run: |
+          ruff format --check .
+
+      - name: Run Static Security Scanner (Bandit SAST)
+        run: |
+          bandit -r . -ll -ii -x ./tests
+
+      - name: Run Mypy Type Checker
+        run: |
+          mypy --ignore-missing-imports .
+
+  test-matrix:
+    name: Test Suite (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - name: Checkout Code
@@ -23,7 +63,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
+          cache: "pip"
 
       - name: Install Dependencies
         run: |
@@ -31,19 +71,19 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Lint Code with Flake8
+      - name: Run Automated Pytest Suite with Coverage
         run: |
-          # Stop build if syntax errors or undefined names exist
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # Exit-zero treats warnings non-fatally
-          flake8 . --count --exit-zero --max-complexity=15 --max-line-length=120 --statistics
+          pytest tests/ -v --cov=. --cov-report=term-missing --cov-report=xml
 
-      - name: Run Unit Tests with Pytest & Coverage
-        run: |
-          pytest tests/ --cov=. --cov-report=term-missing --cov-report=xml
+      - name: Upload Coverage Artifact
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
 
-  security:
-    name: Security & Vulnerability Audit
+  security-audit:
+    name: Dependency Vulnerability Audit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -52,13 +92,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install pip-audit
         run: |
           python -m pip install --upgrade pip
           pip install pip-audit
 
-      - name: Run Dependency Vulnerability Scan
+      - name: Run Dependency Vulnerability Audit
         run: |
-          pip-audit -r requirements.txt || true
+          pip-audit -r requirements.txt
