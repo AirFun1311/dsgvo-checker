@@ -1,0 +1,6 @@
+# Development & Quality Assurance Dependencies
+pytest>=8.0.0
+pytest-cov>=4.1.0
+flake8>=7.0.0
+ruff>=0.3.0
+pip-audit>=2.7.0

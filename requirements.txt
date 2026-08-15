@@ -1,1 +1,5 @@
-
+# Production Dependencies for DSF DSGVO Scanner
+requests>=2.31.0
+reportlab>=4.0.0
+streamlit>=1.30.0
+playwright>=1.40.0
