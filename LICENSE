@@ -1,21 +1,38 @@
-MIT License
+PolyForm Noncommercial License 1.0.0 & Commercial Dual-License
+=================================================================
+Copyright (c) 2026 DSF Consulting / AirFun1311 (AF13-NEXUS). All rights reserved.
 
-Copyright (c) 2025 AirFun1311
+1. NONCOMMERCIAL USE (FREE & OPEN SOURCE):
+-------------------------------------------
+You may freely use, copy, modify, distribute, and execute this software for 
+noncommercial purposes without paying a fee. 
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Noncommercial purposes include:
+- Personal testing, individual security/privacy research, and academic study.
+- Auditing personal (non-business) websites.
+- Educational, open-source demonstration, and charitable non-profit projects.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. COMMERCIAL USE (COMMERCIAL LICENSE REQUIRED):
+-------------------------------------------------
+Any commercial or revenue-generating use of this software, in whole or in part, 
+strictly requires a commercial license from the author prior to deployment.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Commercial use includes, but is not limited to:
+- Using the scanner to perform audits for clients, paying customers, or third-party web assets.
+- Deploying the scanner within a for-profit company, web agency, consultancy, or IT service provider.
+- Integrating this engine, its algorithms, or reports into a commercial product, SaaS, or paid platform.
+
+3. HOW TO ACQUIRE A COMMERCIAL LICENSE:
+----------------------------------------
+To purchase an official, authorized commercial license or discuss custom integration:
+Contact: sf.foodzeit@googlemail.com
+Official Invoices (with tax) and Certificate of Commercial Authorization provided.
+
+4. DISCLAIMER OF WARRANTY:
+--------------------------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR OR COPYRIGHT 
+HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
