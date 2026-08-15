@@ -1,0 +1,49 @@
+name: 🔍 Submit New Tracker / Endpoint
+description: Propose a new third-party tracking endpoint, CDN, or font provider for the scanner database.
+title: "[Tracker]: "
+labels: ["tracker-db", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a new third-party endpoint to expand the compliance scanner database!
+  - type: input
+    id: domain
+    attributes:
+      label: Domain / Endpoint
+      description: e.g. `analytics.subdomain.com`
+      placeholder: `track.example.com`
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Analytics
+        - Advertising / Pixel
+        - Fonts / CDN
+        - Consent Management (CMP)
+        - Social Media Widget
+        - Tag Manager
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: country
+    attributes:
+      label: Hosting / Legal Jurisdiction
+      options:
+        - EU / EEA (Adequate)
+        - USA (DPF / Cloud Act)
+        - China (PIPL / CAC)
+        - Israel (EU Adequacy / PPL)
+        - UK (UK GDPR)
+        - Other Third Country
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Additional Technical Evidence & Privacy Policy Reference
+      description: Provide links or HTTP headers observed during network requests.

@@ -1,0 +1,31 @@
+name: "Supply Chain Security & SBOM Generation"
+
+on:
+  push:
+    branches: [ main, master ]
+  release:
+    types: [ published ]
+
+jobs:
+  sbom:
+    name: Generate SPDX SBOM & Dependency Graph
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate SBOM (SPDX 2.3 JSON)
+        uses: anchore/sbom-action@v0
+        with:
+          path: ./
+          format: spdx-json
+          output-file: ./sbom.spdx.json
+
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsgvo-checker-sbom
+          path: ./sbom.spdx.json

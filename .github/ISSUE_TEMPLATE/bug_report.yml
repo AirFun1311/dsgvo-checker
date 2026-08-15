@@ -1,0 +1,26 @@
+name: 🐛 Bug Report
+description: Create a report to help us improve the scanner engine.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe what bug occurred.
+    validations:
+      required: true
+  - type: input
+    id: target-url
+    attributes:
+      label: Target URL (if public)
+      placeholder: https://example.com
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Info
+      description: Python version, OS, Playwright status
+      value: |
+        - OS: Windows / Linux / macOS
+        - Python Version: 3.12.x
+        - Scanner Mode: Headless / Fallback
