@@ -2,8 +2,8 @@
 
 # DSGVO-Checker
 
-### Webseiten prüfen. Risiken finden. Abmahnungen verhindern.
-**Die automatische Datenschutz- und Sicherheitsprüfung für Unternehmen, Handwerk & Webagenturen.**
+### Automatisierte Datenschutz- und Sicherheitsprüfung für Webseiten
+**Präzise technische Bestandsaufnahme für Unternehmen, Datenschutzbeauftragte und Webagenturen**
 
 [![CI Qualitaetspipeline](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
 [![CodeQL Sicherheitsanalyse](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
@@ -16,103 +16,103 @@
 [![Lizenz: Kommerziell](https://img.shields.io/badge/Lizenz-Kommerziell%20Source--Available-blue.svg)](LICENSE)
 
 <p align="center">
-  <strong>1 Klick. 10 Sekunden. Volle Klarheit.</strong><br>
-  Prüft jede Website sofort auf Google-Fonts-Abflüsse, unzulässige Cookies vor Einwilligung (§ 25 TDDDG) und fehlende Verschlüsselung (Art. 32 DSGVO).
+  <strong>Deterministische und reproduzierbare Compliance-Prüfung für deutsche Webauftritte.</strong><br>
+  Analysiert Webseiten automatisiert auf unzulässige Datenübertragungen (§ 25 TDDDG), unberechtigte Drittanbieter-Tracker, externe Schriftarten (LG München I) und technische Sicherheitsmängel (Art. 32 DSGVO).
 </p>
 
-[Schnellstart](#schnellstart) • [Preise & Lizenzen](#preise--lizenzen) • [Was das System kann](#was-das-system-kann) • [Kommandozeile](#einfache-bedienung-im-terminal)
+[Schnellstart](#schnellstart) • [Lizenzmodelle & Preise](#lizenzmodelle--preise) • [Technische Leistungsmerkmale](#technische-leistungsmerkmale) • [Rechtliche Prüffelder](#rechtliche-pr%C3%BCffelder--gesetzesabgleich) • [Kommandozeile](#kommandozeilen-schnittstelle-cli)
 
 </div>
 
 ---
 
-## Preise & Lizenzen
+## Lizenzmodelle & Preise
 
-> **Ehrliche Software für den deutschen Mittelstand.**  
-> In dieses Prüfprogramm sind monatelange Recherche der aktuellen Rechtslage (DSGVO, § 25 TDDDG, BSI-Vorgaben) und solide Programmierarbeit eingeflossen.  
+> **Professionelle Prüf-Software für den deutschen Mittelstand.**  
+> In dieses System sind monatelange juristische und technische Recherchen aktueller Rechtsnormen (DSGVO, § 25 TDDDG, BSI-Standards) sowie praxiserprobte Software-Architektur eingeflossen.  
 > 
-> Damit das System stets aktuell bleibt und weiter gepflegt wird, ist die Nutzung fair und transparent bepreist:
+> Um eine kontinuierliche Pflege, rechtliche Aktualität und technische Weiterentwicklung sicherzustellen, wird diese Software unter einem transparenten Lizenzmodell bereitgestellt:
 
 ### Übersicht der Lizenzmodelle
 
-| Lizenz | Für wen gedacht? | Preis | Bezugsweg |
+| Lizenzmodell | Berechtigung & Einsatzbereich | Vergütung | Bezugsweg |
 | :--- | :--- | :---: | :--- |
-| **Persönlich / Lernen & Forschung** | Für Einzelpersonen & Studenten zum Lernen und für private Tests. | **29 €** *(einmalig)* | Per E-Mail / Rechnung |
-| **Gewerblich Einzel-Website** | Für 1 Betrieb oder Selbstständigen zur dauerhaften Absicherung der eigenen Firmen-Website. | **129 €** *(einmalig)* | Per E-Mail / Rechnung |
-| **Agenturen & IT-Dienstleister** | Für Webagenturen und IT-Berater. Unbegrenzte Prüfungen für Kunden-Websites inklusive fertigem PDF-Bericht. | **390 €** *(einmalig)* | Per E-Mail / Rechnung |
-| **Rundum-Sorglos-Prüfung** | Keine Lust auf Technik? Wir prüfen Ihre Website komplett für Sie und senden Ihnen den fertigen PDF-Bericht. | **190 €** *(pro Website)* | Per E-Mail / Rechnung |
+| **Persönliche Lizenz** | Für Einzelpersonen, Studierende und Forschung zur persönlichen Weiterbildung & privaten Analyse. | **29 €** *(einmalig)* | Per E-Mail / Rechnung |
+| **Gewerbliche Einzel-Lizenz** | Für 1 Unternehmen / Selbstständigen zur eigenständigen und dauerhaften Prüfung der eigenen Domain. | **129 €** *(einmalig)* | Per E-Mail / Rechnung |
+| **Agentur- & Berater-Lizenz** | Für Webagenturen, Systemhäuser und IT-Berater. Unbegrenzte Mandanten-Prüfungen inklusive PDF-Export. | **390 €** *(einmalig)* | Per E-Mail / Rechnung |
+| **Individueller Audit-Service** | Durchführung der vollständigen technischen Prüfung durch den Entwickler inklusive verifiziertem PDF-Bericht. | **190 €** *(pro Domain)* | Per E-Mail / Rechnung |
 
-**Bestellung & offizielle Rechnung (mit ausgewiesener MwSt.):**  
-Schreiben Sie einfach eine kurze E-Mail an: `sf.foodzeit@googlemail.com`  
-*(Zahlung bequem per Banküberweisung, PayPal oder Stripe. Sie erhalten direkt Ihre Rechnung und Ihr Lizenzzertifikat.)*
-
----
-
-## Was das System kann
-
-* **Gründliche Browser-Prüfung**: Lädt die Website wie ein echter Besucher und entlarvt versteckte Tracker, Skripte und Werbedienste.
-* **Schriften- & Abmahncheck**: Erkennt sofort, ob Google Fonts oder andere fremde Server ungefragt IP-Adressen in die USA übertragen (*LG München I*).
-* **Verschlüsselungs- & Sicherheitsprüfung**: Überprüft HTTPS-Zertifikate, moderne Schutzmechanismen und verhindert Datenlecks.
-* **Cookie- & Speicher-Check**: Findet Cookies, die heimlich vor dem Klick auf das Zustimmungs-Banner gesetzt werden (§ 25 TDDDG).
-* **Druckfertiger PDF-Bericht**: Erstellt auf Knopfdruck ein klares, verständliches Gutachten für Kunden, Prüfer oder Ihre Unterlagen.
-* **Automatische Warnung bei Fehlern**: Erkennt schwerwiegende Verstöße sofort und schlägt Alarm.
+**Bestellungen & Rechnungsstellung (mit ausgewiesener Mehrwertsteuer):**  
+Richten Sie Ihre Lizenzanfrage bitte formlos per E-Mail an: `sf.foodzeit@googlemail.com`  
+*(Zahlung per Banküberweisung, PayPal oder Kreditkarte. Sie erhalten eine ordnungsgemäße Rechnung sowie ein offizielles Lizenzzertifikat.)*
 
 ---
 
-## So funktioniert die Prüfung
+## Technische Leistungsmerkmale
+
+* **Vollständige Browser-basierte Analyse**: Simuliert einen echten Webseitenbesuch über eine automatisierte Browser-Engine (Playwright / Chromium) zur lückenlosen Erkennung dynamischer Skripte, Werbenetzwerke und Session-Recorder.
+* **Prüfung externer Schriften & CDNs**: Erkennt unzulässige Serververbindungen zu Drittstaaten (z. B. Google Fonts, Adobe Typekit) gemäß der Rechtsprechung des *LG München I (Az. 3 O 17493/20)*.
+* **Verschlüsselungs- & Sicherheits-Audit**: Überprüft Transportverschlüsselung (TLS), Zertifikatsgültigkeit, HSTS mit Preload sowie serverseitige Sicherheits-Header (CSP, X-Frame-Options, Referrer-Policy) nach Art. 32 DSGVO.
+* **Einwilligungs- & Cookie-Erkennung**: Identifiziert Cookies und Web-Storage-Zugriffe, die vor einer ausdrücklichen und informierten Nutzereinwilligung gesetzt werden (§ 25 Abs. 1 TDDDG).
+* **Prüffähige Berichterstellung**: Erzeugt strukturierte, druckfertige PDF-Prüfberichte für Geschäftsführung, Kunden und Dokumentationspflichten sowie JSON-Daten für automatisierte Schnittstellen.
+* **Integrierte Qualitäts-Schwellenwerte**: Konfigurierbare Abbruchkriterien (`--fail-on-risk`, `--fail-on-high`) zur automatischen Fehlerüberwachung in Entwicklungs- und Freigabeprozessen.
+
+---
+
+## Systemarchitektur & Ablauf
 
 ```mermaid
 flowchart TD
-    A[Website-Adresse eingeben] --> B{Prüfung starten}
+    A[Ziel-Website URL] --> B{Prüf-Orchestrator}
     
-    B -->|Gründliche Analyse| C[Echter Browser lädt die Seite]
-    B -->|Schnellprüfung| D[Direkte Server-Abfrage]
+    B -->|Dynamische Analyse| C[Automatisierte Browser-Engine]
+    B -->|Schnellprüfung| D[Direkte HTTP/HTML-Analyse]
     
-    C --> E[Aufgezeichnete Daten & Netzwerk-Verbindungen]
+    C --> E[Erfasste Netzwerk- & DOM-Telemetrie]
     D --> E
     
-    E --> F[Prüfung auf Rechts- und Sicherheitsmängel]
+    E --> F[Compliance-Auswertungslogik]
     
-    subgraph Pruefpunkte [Die 5 Kernbereiche]
+    subgraph Prueffelder [Prüffelder nach Rechtsnorm]
         F --> G1[Externe Schriften & Fremdserver]
-        F --> G2[Werbe-Tracker & Analyse-Dienste]
-        F --> G3[Cookies vor Nutzer-Zustimmung]
-        F --> G4[Verschlüsselung & Sicherheits-Header]
-        F --> G5[Datenschutzerklärung & Impressum]
+        F --> G2[Tracker- & Statistik-Signaturen]
+        F --> G3[Cookie-Setzung vor Einwilligung]
+        F --> G4[TLS / HTTPS & Sicherheits-Header]
+        F --> G5[Rechtstexte Impressum & Datenschutz]
     end
     
-    Pruefpunkte --> H[Ergebnis-Auswertung & Risikostufe]
+    Prueffelder --> H[Berechnung der Risikostufe & Strafmatrix]
     
-    H --> I1[Sofort-Ausgabe im Terminal]
-    H --> I2[Druckfertiger PDF-Bericht]
-    H --> I3[JSON-Rohdaten für Entwickler]
-    H --> I4[Einfache Web-Bedienoberfläche]
+    H --> I1[Strukturierte Terminal-Ausgabe]
+    H --> I2[Druckfertiger PDF-Prüfbericht]
+    H --> I3[Maschinenlesbarer JSON-Export]
+    H --> I4[Grafische Web-Bedienoberfläche]
 ```
 
 ---
 
 ## Schnellstart
 
-### 1. Über die Web-Oberfläche bedienen (Docker)
+### 1. Grafische Web-Bedienoberfläche starten (Docker)
 
-Startet das Programm direkt im Browser auf Port 8501:
+Startet die Web-Oberfläche auf Port 8501:
 
 ```bash
 docker run -d -p 8501:8501 --name dsgvo-checker ghcr.io/airfun1311/dsgvo-checker:latest
 ```
 
-Danach einfach `http://localhost:8501` im Webbrowser öffnen.
+Die Bedienoberfläche ist anschließend unter `http://localhost:8501` im Webbrowser erreichbar.
 
 ---
 
-### 2. Auf dem eigenen Rechner installieren (Python)
+### 2. Lokale Installation (Python)
 
 ```bash
 # Quellcode herunterladen
 git clone https://github.com/AirFun1311/dsgvo-checker.git
 cd dsgvo-checker
 
-# Python-Umgebung anlegen
+# Virtuelle Python-Umgebung einrichten
 python -m venv .venv
 
 # Umgebung aktivieren:
@@ -121,69 +121,82 @@ source .venv/bin/activate
 # Windows (PowerShell):
 .\.venv\Scripts\Activate.ps1
 
-# Benötigte Bausteine installieren
+# Abhängigkeiten installieren
 pip install -r requirements.txt
 
-# (Optional) Browser für gründliche Prüfung laden:
+# Browser-Komponente für JavaScript-Prüfung installieren:
 playwright install chromium
 ```
 
 ---
 
-## Einfache Bedienung im Terminal
+## Kommandozeilen-Schnittstelle (CLI)
 
-Prüfungen direkt über die Befehlszeile ausführen:
+Prüfungen direkt über das Terminal ausführen:
 
 ```bash
-# Schneller Überblick direkt am Bildschirm
-python run_scan.py https://beispiel-betrieb.de
+# Standard-Prüfung mit Terminal-Ausgabe
+python run_scan.py https://beispiel-unternehmen.de
 
-# Vollständige Prüfung: Erstellt fertigen PDF-Bericht und Daten-Export
-python run_scan.py https://beispiel-betrieb.de --pdf --json -o ./berichte/
+# Vollständiges Audit: Erzeugt PDF-Prüfbericht und JSON-Datenexport
+python run_scan.py https://beispiel-unternehmen.de --pdf --json -o ./berichte/
 
-# Schnelle Vorprüfung ohne Browser
-python run_scan.py https://beispiel-betrieb.de --no-js --pdf
+# Schnelle Vorprüfung ohne Browser-Engine
+python run_scan.py https://beispiel-unternehmen.de --no-js --pdf
 ```
 
+### Übersicht der Befehlsparameter
+
+| Parameter | Typ | Beschreibung |
+| :--- | :--- | :--- |
+| `url` | `Text` | Ziel-URL der zu prüfenden Webseite *(Pflichtangabe)* |
+| `--pdf` | `Schalter` | Erzeugt einen druckfertigen PDF-Prüfbericht |
+| `--json` | `Schalter` | Exportiert alle Prüfergebnisse als strukturierte JSON-Datei |
+| `--no-js` | `Schalter` | Führt die Prüfung im schnellen HTTP-Modus ohne Browser aus |
+| `-o`, `--output-dir` | `Pfad` | Zielverzeichnis für generierte Berichte *(Standard: `. /`)* |
+| `--fail-on-risk` | `Zahl` | Beendet mit Rückgabewert `1`, wenn der Risikowert $\ge$ Schwellenwert ist (0–100) |
+| `--fail-on-high` | `Schalter` | Beendet mit Rückgabewert `1`, wenn mindestens ein schwerer Verstoß vorliegt |
+| `-q`, `--quiet` | `Schalter` | Unterdrückt Textausgaben (geeignet für automatisierte Hintergrundläufe) |
+
 ---
 
-## Was genau geprüft wird (Die 5 wichtigsten Punkte)
+## Rechtliche Prüffelder & Gesetzesabgleich
 
-Alle Tests sind direkt an das deutsche und europäische Recht angelehnt:
+Die technischen Prüfungen sind direkt den geltenden deutschen und europäischen Rechtsnormen zugeordnet:
 
-| Prüfpunkt | Rechtliche Vorgabe | Dringlichkeit | Warum ist das wichtig? |
+| Prüfbereich | Gesetzliche Grundlage | Schweregrad | Technische Relevanz |
 | :--- | :--- | :--- | :--- |
-| **Externe Schriften (z.B. Google Fonts)** | Art. 44 ff. DSGVO, *LG München I (3 O 17493/20)* | **HOCH** | Häufiger Abmahngrund: IP-Adressen von Besuchern dürfen nicht ungefragt an US-Server fließen. |
-| **Cookies vor dem Banner** | § 25 Abs. 1 TDDDG | **HOCH** | Cookies und Tracker dürfen erst nach echtem Klick auf „Zustimmen“ gesetzt werden. |
-| **Verschlüsselung (HTTPS & Zertifikate)** | Art. 32 Abs. 1 DSGVO | **KRITISCH** | Kontaktdaten und Formulareingaben müssen sicher verschlüsselt übertragen werden. |
-| **Sicherheits-Schutzschilde (Header)** | Art. 32 DSGVO | **MITTEL** | Schützt Ihre Website davor, dass fremde Kriminelle Inhalte manipulieren oder abfangen. |
-| **Datenschutzerklärung & Impressum** | Art. 12, 13 DSGVO | **MITTEL** | Pflichttexte müssen erreichbar sein und alle eingesetzten Dienste ehrlich auflisten. |
+| **Externe Schriftarten / CDNs** | Art. 44 ff. DSGVO, *LG München I (3 O 17493/20)* | **HOCH** | Unzulässige Übermittlung von IP-Adressen an Drittstaaten ohne Einwilligung |
+| **Cookies & LocalStorage** | § 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO | **HOCH** | Speichern und Auslesen von Nutzerdaten vor aktiver Einwilligung |
+| **Transportverschlüsselung** | Art. 32 Abs. 1 lit. a DSGVO | **KRITISCH** | Fehlende oder veraltete HTTPS/TLS-Verschlüsselung bei Datenübertragungen |
+| **Sicherheits-Header (HSTS/CSP)** | Art. 32 Abs. 1 lit. b DSGVO (TOMs) | **MITTEL** | Fehlende serverseitige Absicherung gegen Manipulation und Abfangen |
+| **Transparenz der Rechtstexte** | Art. 12, 13 DSGVO | **MITTEL** | Unvollständige Angaben oder fehlende Datenschutzerklärung / Impressum |
 
 ---
 
-## Geprüfte Software-Qualität
+## Software-Qualitätssicherung & Tests
 
-Alle Funktionen werden vor jeder Veröffentlichung automatisch durchgetestet:
+Das System wird vor jeder Veröffentlichung automatisiert auf Funktionalität und Richtigkeit geprüft:
 
 ```bash
 # Alle 16 automatisierten Tests ausführen
 pytest tests/ -v
 
-# Quellcode-Qualität überprüfen
+# Einhaltung von Quellcode- und Formatierungsstandards prüfen
 ruff check .
 ```
 
 ---
 
-## Kontakt & Betreiber
+## Betreiber & Kontakt
 
 * **Entwickler & Inhaber**: DSF Consulting / AirFun1311  
-* **Standort**: Fürth / Metropolregion Nürnberg, Franken  
+* **Standort**: Fürth / Metropolregion Nürnberg, Deutschland  
 * **Lizenz- und Prüfanfragen**: `sf.foodzeit@googlemail.com`  
-* **Hinweis**: Dieses Werkzeug führt eine fundierte technische Prüfung durch. Für eine rechtsverbindliche Rechtsberatung wenden Sie sich bitte an einen Fachanwalt oder Datenschutzbeauftragten.
+* **Hinweis**: Dieses System führt eine technische Bestandsaufnahme durch. Es ersetzt keine individuelle juristische Beratung durch einen Fachanwalt oder zertifizierten Datenschutzbeauftragten.
 
 ---
 
 <div align="center">
-  <sub>Entwickelt in Franken für den deutschen Mittelstand • DSF Consulting • Fürth</sub>
+  <sub>Entwickelt für den deutschen Mittelstand • DSF Consulting • Fürth, Deutschland</sub>
 </div>
