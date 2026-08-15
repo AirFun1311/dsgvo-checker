@@ -1,25 +1,26 @@
 <div align="center">
 
-# DSGVO / GDPR Compliance Verification Engine
+# DSGVO-Prüfsystem & Technische Audit-Engine
 
-### Automated Technical Audit System & Compliance Reporting Infrastructure
+### Automatisiertes Prüfsystem für Webseiten-Datenschutz und technische IT-Sicherheit
+**Entwickelt für den deutschen Mittelstand, Datenschutzbeauftragte, Handwerksbetriebe und Webagenturen**
 
-[![CI Quality Pipeline](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
-[![CodeQL SAST](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
-[![Release v2.0.0](https://img.shields.io/badge/Release-v2.0.0-0969da.svg?logo=github)](https://github.com/AirFun1311/dsgvo-checker/releases)
-[![Tests Passing](https://img.shields.io/badge/tests-16%20passed-238636.svg?logo=pytest&logoColor=white)](https://github.com/AirFun1311/dsgvo-checker/actions)
-[![Supply Chain SLSA](https://img.shields.io/badge/Supply%20Chain-SLSA%20Level%203-238636.svg?logo=openssf)](https://slsa.dev/)
-[![SBOM SPDX 2.3](https://img.shields.io/badge/SBOM-SPDX%202.3%20Automated-8250df.svg)](https://spdx.dev/)
+[![CI Qualitaetspipeline](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
+[![CodeQL Sicherheitsanalyse](https://github.com/AirFun1311/dsgvo-checker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AirFun1311/dsgvo-checker/actions)
+[![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-0969da.svg?logo=github)](https://github.com/AirFun1311/dsgvo-checker/releases)
+[![Teststatus: 16 Bestanden](https://img.shields.io/badge/Tests-16%20Bestanden-238636.svg?logo=pytest&logoColor=white)](https://github.com/AirFun1311/dsgvo-checker/actions)
+[![Lieferkettensicherheit: SLSA Stufe 3](https://img.shields.io/badge/Lieferkette-SLSA%20Stufe%203-238636.svg?logo=openssf)](https://slsa.dev/)
+[![Software-Stueckliste: SPDX 2.3](https://img.shields.io/badge/SBOM-SPDX%202.3%20Automatisiert-8250df.svg)](https://spdx.dev/)
 [![Python Version](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Docker Ready](https://img.shields.io/badge/container-docker-2496ED.svg?logo=docker&logoColor=white)](Dockerfile)
-[![License: Commercial Source-Available](https://img.shields.io/badge/License-Commercial%20Source--Available-blue.svg)](LICENSE)
+[![Docker Container](https://img.shields.io/badge/Container-Docker%20Bereit-2496ED.svg?logo=docker&logoColor=white)](Dockerfile)
+[![Lizenz: Kommerziell](https://img.shields.io/badge/Lizenz-Kommerziell%20Source--Available-blue.svg)](LICENSE)
 
 <p align="center">
-  <strong>Production-grade automated compliance scanner designed for German & European SMEs, DPOs, and DevSecOps pipelines.</strong><br>
-  Performs deep inspections for GDPR/DSGVO non-compliance, unconsented third-party trackers, external font leakage, and cryptographic misconfigurations.
+  <strong>Praxiserprobtes, deterministisches Prüfwerkzeug für deutsche Webseiten.</strong><br>
+  Prüft Webauftritte sekundenschnell auf DSGVO-Verstöße, unerlaubte US-Tracker, externe Schriftarten-Abflüsse (§ 25 TDDDG) und fehlende Verschlüsselung (Art. 32 DSGVO).
 </p>
 
-[Quickstart](#quickstart) • [Lizenz & Preise](#lizenzierung--konditionen-source-available) • [Architecture](#system-architecture) • [CLI Security Gate](#command-line-interface-cli) • [Docker Deployment](#docker-deployment)
+[Schnellstart](#schnellstart) • [Lizenz & Preise](#lizenzierung--konditionen) • [Funktionsweise](#funktionsweise--architektur) • [Kommandozeile](#kommandozeilen-schnittstelle-cli) • [Rechtliche Grundlagen](#gesetzliche-pruefungsbereiche)
 
 </div>
 
@@ -27,263 +28,181 @@
 
 ## Lizenzierung & Konditionen (Source-Available)
 
-> **Entwickelt für professionelle Auditoren, IT-Dienstleister & Unternehmen.**  
-> In diese Compliance-Engine sind monatelange intensive Forschung, detaillierte Gesetzestexte (DSGVO, § 25 TDDDG, EU AI Act 2026) und modernste DevSecOps-Standards eingeflossen.  
+> **Entwickelt für den deutschen Mittelstand, IT-Dienstleister & Betriebe.**  
+> In diese Prüf-Engine sind monatelange intensive Recherche, deutsche Gesetzestexte (DSGVO, § 25 TDDDG, BSI-Standards, EU AI Act 2026) und praxiserprobte Ingenieursarbeit eingeflossen.  
 > 
-> Um eine kontinuierliche Pflege und Weiterentwicklung zu gewährleisten, wird diese Software als **Source-Available Commercial Software** lizenziert. Jede Nutzung unterliegt einer fairen Lizenzierung.
+> Um eine dauerhafte Pflege, juristische Aktualität und technische Weiterentwicklung zu gewährleisten, wird diese Software als **Source-Available Commercial Software** lizenziert. Jede Nutzung unterliegt einer fairen, transparenten Lizenzierung.
 
 ### Übersicht der Lizenzmodelle
 
 | Lizenz / Modell | Zielgruppe & Berechtigung | Preis | Bezugsweg |
 | :--- | :--- | :---: | :--- |
-| **Personal / Student & Research** | Für Einzelpersonen, Studenten & Forscher zur persönlichen Weiterbildung & nicht-kommerziellen Analyse. | **29 €** *(einmalig)* | Per E-Mail / Invoice |
-| **Commercial Single-Domain** | Für 1 Unternehmen / Selbstständigen zur eigenständigen Prüfung & Absicherung der eigenen Firmen-Domain. | **129 €** *(einmalig)* | Per E-Mail / Invoice |
-| **Agency & Consultant Pro** | Für Webagenturen & IT-Consultants. Unbegrenzte Scans für Kunden-Websites inklusive White-Label PDF-Export. | **390 €** *(einmalig)* | Per E-Mail / Invoice |
-| **Done-For-You Audit-Service** | Vollständiges Turnkey-Audit durch den Autor inklusive verifiziertem 10-seitigen PDF-Prüfbericht. | **190 €** *(pro Domain)* | Per E-Mail / Invoice |
+| **Persönlich / Ausbildung & Forschung** | Für Einzelpersonen, Studenten & Forscher zur persönlichen Weiterbildung & internen Analyse. | **29 €** *(einmalig)* | Per E-Mail / Rechnung |
+| **Gewerblich Einzel-Domain** | Für 1 Unternehmen / Selbstständigen zur eigenständigen Prüfung & Absicherung der eigenen Firmen-Domain. | **129 €** *(einmalig)* | Per E-Mail / Rechnung |
+| **Agenturen & IT-Berater Pro** | Für Webagenturen & IT-Dienstleister. Unbegrenzte Scans für Kunden-Websites inklusive druckreifem PDF-Export. | **390 €** *(einmalig)* | Per E-Mail / Rechnung |
+| **Komplettservice Prüfbericht** | Vollständiges Turnkey-Audit durch den Entwickler inklusive geprüftem 10-seitigen PDF-Bericht für Ihre Unterlagen. | **190 €** *(pro Domain)* | Per E-Mail / Rechnung |
 
-**Lizenzanfragen & offizielle Rechnung:**  
+**Lizenzanfragen & offizielle Rechnung (mit USt.):**  
 Bestellungen und Autorisierungsanfragen richten Sie bitte formlos per E-Mail an: `sf.foodzeit@googlemail.com`  
 *(Zahlung flexibel per Banküberweisung, PayPal oder Stripe. Ausgewiesene Rechnung & Lizenzzertifikat werden direkt ausgestellt.)*
 
+---
 
+## Technische Leistungsmerkmale
 
+* **Zwei-Stufen-Prüfverfahren**: Vollständige Browser-Automatisierung (Playwright / Chromium) zur Erfassung dynamischer JavaScript-Tracker kombiniert mit schnellem HTTP-Ausweichverfahren.
+* **Drittanbieter- & Tracker-Erkennung**: Kontinuierlicher Abgleich gegen über 50 bekannte Werbenetzwerke, Statistikdienste, Sitzungsaufzeichner und Telemetrie-Endpunkte.
+* **Prüfung externer Schriften**: Automatische Erkennung nicht-eingewilligter Serveraufrufe (z.B. Google Fonts, Adobe Typekit) gemäß deutscher Rechtsprechung (*LG München I, Az. 3 O 17493/20*).
+* **Verschlüsselungs- & Sicherheits-Audit**: Überprüfung von TLS-Protokollen, Zertifikatslaufzeiten, HSTS, Content Security Policy (CSP), X-Frame-Options und Referrer-Richtlinien.
+* **Speicher- & Cookie-Prüfung**: Echtzeit-Erfassung von Cookies und Speicherzugriffen, die vor einer aktiven Nutzereinwilligung gesetzt werden (§ 25 TDDDG).
+* **Druckreifer PDF-Export**: Erzeugung professioneller, strukturierter Vektor-PDF-Berichte mit ReportLab für Prüfer, Kunden und Aufsichtsbehörden.
+* **Automatische Schwellenwerte**: Definierbare Abbruchkriterien (`--fail-on-risk`, `--fail-on-high`) zur direkten Einbindung in Entwicklungs- und Freigabeprozesse.
 
 ---
 
-## Technical Specifications & Capabilities
-
-* **Dual-Engine Architecture**: Headless browser automation (Playwright / Chromium) for full JavaScript execution combined with high-throughput HTTP/DOM fallback analysis.
-* **Third-Party Telemetry & Tracker Detection**: Continuous signature analysis against 50+ adtech networks, session recorders, tracking pixels, and analytics endpoints.
-* **Dynamic Remote Asset & Font Audit**: Automatic identification of unconsented third-party asset calls (e.g., Google Fonts, Adobe Typekit) violating European jurisprudence (*LG Muenchen I, Az. 3 O 17493/20*).
-* **Cryptographic & Header Verification**: Verification of TLS protocols, cipher suites, certificate validity, HSTS with preload, CSP policies, X-Frame-Options, and Referrer-Policy.
-* **Storage & Consent Enforcement**: Real-time identification of cookies, local storage tokens, and tracking beacons placed prior to explicit user opt-in (§ 25 TDDDG).
-* **Multi-Format Export Pipelines**:
-  * Structured terminal output with granular risk metrics.
-  * Audit-grade **vector PDF reports** generated via ReportLab.
-  * Schema-validated **JSON exports** for SIEM and centralized telemetry pipelines.
-  * Interactive **Streamlit Web Application** for on-demand auditing.
-* **Automated CI/CD Quality Gates**: Configurable exit codes (`--fail-on-risk`, `--fail-on-high`) to prevent deployment of non-compliant web applications.
-
----
-
-## System Architecture
+## Funktionsweise & Architektur
 
 ```mermaid
 flowchart TD
-    A[Target URL] --> B{Scanner Orchestrator}
+    A[Ziel-Website URL] --> B{Prüf-Orchestrator}
     
-    B -->|JavaScript Engine| C[Playwright Headless Browser]
-    B -->|Fallback / Fast Mode| D[Requests + HTML Parser]
+    B -->|JavaScript-Analyse| C[Playwright Headless-Browser]
+    B -->|Schnellmodus| D[Direkte HTTP/HTML-Analyse]
     
-    C --> E[Network & DOM Telemetry Stream]
+    C --> E[Netzwerk- & DOM-Datenstrom]
     D --> E
     
-    E --> F[Compliance Evaluation Engine]
+    E --> F[Compliance-Bewertungs-Engine]
     
-    subgraph Evaluators [Audit Modules]
-        F --> G1[Remote Font & Asset Leakage]
-        F --> G2[Tracker & Analytics Signature DB]
-        F --> G3[Cookie Consent & Storage Verification]
-        F --> G4[TLS / SSL & Security Header Matrix]
-        F --> G5[Privacy Policy Consistency Matcher]
+    subgraph Pruefmodule [Prüfbausteine]
+        F --> G1[Externe Schriften & CDN-Abflüsse]
+        F --> G2[Tracker- & Statistik-Signaturen]
+        F --> G3[Cookie-Einwilligung vor Consent]
+        F --> G4[TLS / SSL & Sicherheits-Header]
+        F --> G5[Abgleich Datenschutzerklärung]
     end
     
-    Evaluators --> H[Risk Scoring Engine]
+    Pruefmodule --> H[Risiko-Berechnung & Strafpunkt-System]
     
-    H --> I1[Terminal Standard Output]
-    H --> I2[Executive PDF Audit Report]
-    H --> I3[JSON Telemetry Export]
-    H --> I4[Streamlit Web Interface]
-    H --> I5[Pipeline Exit Code: 0 / 1 / 2]
+    H --> I1[Kommandozeilen-Ausgabe]
+    H --> I2[Druckreifer PDF-Prüfbericht]
+    H --> I3[Strukturierter JSON-Datenexport]
+    H --> I4[Grafische Web-Bedienoberfläche]
+    H --> I5[System-Rückgabewert: 0 / 1 / 2]
 ```
 
 ---
 
-## Quickstart
+## Schnellstart
 
-### 1. Docker Deployment (Recommended)
+### 1. Grafische Web-Bedienoberfläche starten (Docker)
 
-Run the containerized web interface on port 8501:
+Startet die Web-Oberfläche direkt auf Port 8501:
 
 ```bash
 docker run -d -p 8501:8501 --name dsgvo-checker ghcr.io/airfun1311/dsgvo-checker:latest
 ```
 
-Access the dashboard via `http://localhost:8501`.
+Die Bedienoberfläche ist anschließend unter `http://localhost:8501` im Browser erreichbar.
 
 ---
 
-### 2. Local Python Environment
+### 2. Lokale Installation (Python)
 
 ```bash
-# Clone the repository
+# Repository herunterladen
 git clone https://github.com/AirFun1311/dsgvo-checker.git
 cd dsgvo-checker
 
-# Initialize virtual environment
+# Virtuelle Python-Umgebung einrichten
 python -m venv .venv
 
-# Activate:
+# Umgebung aktivieren:
 # Linux / macOS:
 source .venv/bin/activate
 # Windows (PowerShell):
 .\.venv\Scripts\Activate.ps1
 
-# Install dependencies
+# Abhängigkeiten installieren
 pip install -r requirements.txt
 
-# (Optional) Install Playwright Chromium for JavaScript analysis:
+# (Optional) Browser für dynamische JavaScript-Prüfung installieren:
 playwright install chromium
 ```
 
 ---
 
-## Command Line Interface (CLI)
+## Kommandozeilen-Schnittstelle (CLI)
 
-Run compliance scans directly from your terminal:
+Prüfungen direkt im Terminal durchführen:
 
 ```bash
-# Standard terminal scan
-python run_scan.py https://example.com
+# Einfache Prüfung mit Terminal-Ausgabe
+python run_scan.py https://beispiel-firma.de
 
-# Comprehensive audit: Generate PDF and JSON reports
-python run_scan.py https://example.com --pdf --json -o ./reports/
+# Vollständiges Audit: Erzeugt druckreifen PDF-Bericht und JSON-Rohdaten
+python run_scan.py https://beispiel-firma.de --pdf --json -o ./berichte/
 
-# Fast scan without JavaScript rendering
-python run_scan.py https://example.com --no-js --pdf
+# Schnelle Vorprüfung ohne Browser-Engine
+python run_scan.py https://beispiel-firma.de --no-js --pdf
 ```
 
-### CLI Flag Reference
+### Übersicht der Kommandozeilen-Parameter
 
-| Parameter | Type | Description |
+| Parameter | Typ | Beschreibung |
 | :--- | :--- | :--- |
-| `url` | `string` | Target website URL to audit *(Required)* |
-| `--pdf` | `flag` | Generate an audit-ready executive PDF report |
-| `--json` | `flag` | Export complete telemetry to a machine-readable JSON file |
-| `--no-js` | `flag` | Disable Playwright rendering (fast HTTP fallback mode) |
-| `-o`, `--output-dir` | `path` | Output directory for generated artifacts *(Default: `.`)* |
-| `--fail-on-risk` | `integer` | Exit with code `1` if risk score is $\ge$ threshold (0–100) |
-| `--fail-on-high` | `flag` | Exit with code `1` if any high-severity violation is detected |
-| `-q`, `--quiet` | `flag` | Minimal logging mode for automated pipelines |
+| `url` | `Text` | Ziel-URL der zu prüfenden Website *(Pflichtangabe)* |
+| `--pdf` | `Schalter` | Erzeugt einen druckreifen PDF-Prüfbericht |
+| `--json` | `Schalter` | Exportiert alle Prüfdaten als maschinenlesbare JSON-Datei |
+| `--no-js` | `Schalter` | Deaktiviert die Browser-Engine (schneller HTTP-Modus) |
+| `-o`, `--output-dir` | `Pfad` | Zielverzeichnis für generierte Berichte *(Standard: `. /`)* |
+| `--fail-on-risk` | `Zahl` | Beendet mit Fehlercode `1`, wenn der Risikowert $\ge$ Schwellenwert ist (0–100) |
+| `--fail-on-high` | `Schalter` | Beendet mit Fehlercode `1`, wenn mindestens ein schwerer Verstoß vorliegt |
+| `-q`, `--quiet` | `Schalter` | Unterdrückt Textausgaben (ideal für automatische Hintergrundläufe) |
 
 ---
 
-## CI/CD Security Gate Integration
+## Gesetzliche Prüfungsbereiche
 
-Integrate automated compliance verification into continuous integration workflows:
+Alle technischen Auswertungen sind direkt den geltenden deutschen und europäischen Rechtsnormen zugeordnet:
 
-### GitHub Actions Pipeline Example
-
-```yaml
-name: Continuous DSGVO Compliance Gate
-
-on:
-  push:
-    branches: [ main ]
-  schedule:
-    - cron: '0 3 * * 1' # Scheduled weekly audit
-
-jobs:
-  compliance-audit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-          playwright install chromium
-
-      - name: Execute Security Gate
-        run: |
-          python run_scan.py https://staging.example.com \
-            --fail-on-risk 35 \
-            --fail-on-high \
-            --pdf \
-            --json \
-            -o ./audit-results/
-
-      - name: Archive Compliance Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dsgvo-audit-reports
-          path: ./audit-results/
-```
-
-### Process Exit Codes:
-* `0`: **PASS** — Target system is compliant within acceptable risk parameters.
-* `1`: **FAIL** — High-severity violations identified or risk threshold exceeded.
-* `2`: **ERROR** — Network timeout, unreachable host, or fatal runtime exception.
-
----
-
-## Docker Deployment
-
-### Docker Compose Architecture
-
-```bash
-# Start Streamlit Web UI on port 8501
-docker compose up -d web
-
-# Execute a one-off headless scan inside Docker
-docker compose run --rm cli https://example.com --pdf --json
-```
-
----
-
-## Legal & Regulatory Standards
-
-Technical evaluations are mapped directly to European and German statutory requirements:
-
-| Inspection Area | Statutory Anchor | Severity Level | Technical Implication |
+| Prüfbereich | Gesetzliche Grundlage | Schweregrad | Technische Auswirkung |
 | :--- | :--- | :--- | :--- |
-| **External Fonts / CDNs** | Art. 44 ff. DSGVO, *LG Muenchen I (3 O 17493/20)* | **HIGH** | Unlawful transmission of IP addresses to third countries |
-| **Pre-Consent Cookies** | § 25 TDDDG, Art. 6(1)(a) DSGVO | **HIGH** | Missing explicit prior consent for storage access |
-| **Transport Layer Security** | Art. 32(1)(a) DSGVO | **CRITICAL** | Plaintext transmission of personal data |
-| **Security Headers (HSTS/CSP)** | Art. 32(1)(b) DSGVO (TOMs) | **MEDIUM** | Missing technical protection against interception & XSS |
-| **Privacy Policy Transparency** | Art. 12, 13 DSGVO | **MEDIUM** | Incomplete disclosure of tracking technologies |
+| **Externe Schriften / CDNs** | Art. 44 ff. DSGVO, *LG München I (3 O 17493/20)* | **HOCH** | Unzulässige Übermittlung von IP-Adressen an US-Server ohne Einwilligung |
+| **Cookies vor Einwilligung** | § 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO | **HOCH** | Unzulässiges Setzen von Identifikatoren vor aktiver Nutzerauswahl |
+| **Transportverschlüsselung** | Art. 32 Abs. 1 lit. a DSGVO | **KRITISCH** | Unverschlüsselte Klartextübertragung personenbezogener Daten |
+| **Sicherheits-Header (HSTS/CSP)** | Art. 32 Abs. 1 lit. b DSGVO (TOMs) | **MITTEL** | Fehlende serverseitige Härtung gegen Manipulation und Abfangen |
+| **Vollständigkeit Rechtstexte** | Art. 12, 13 DSGVO | **MITTEL** | Fehlende oder unzureichende Pflichtangaben zu eingesetzten Diensten |
 
 ---
 
-## Quality Assurance & Testing
+## Qualitätssicherung & Testberichte
 
-The codebase enforces strict code quality and comprehensive test coverage:
+Das Projekt unterliegt strenger kontinuierlicher Qualitätskontrolle:
 
 ```bash
-# Run pytest test suite
+# Alle 16 automatisierten Tests ausführen
 pytest tests/ -v
 
-# Run linting and code formatting verification
+# Code-Stil und Formatierung prüfen
 ruff check .
 ruff format --check .
 
-# Run static application security testing (SAST)
+# Statische Sicherheitsanalyse durchführen
 bandit -r . -ll -ii
 ```
 
 ---
 
-## Governance & Security
+## Kontakt & Impressum
 
-* **Contribution Workflow**: Review [CONTRIBUTING.md](CONTRIBUTING.md) for Conventional Commits and development setup.
-* **Security & Vulnerability Disclosure**: Review [SECURITY.md](SECURITY.md) for reporting channels and response SLAs.
-* **Code of Conduct**: Governed by [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-
----
-
-## License
-
-Distributed under the **DSF Commercial & Personal Source-Available License**. See [`LICENSE`](LICENSE) for complete terms.
+* **Entwickler & Inhaber**: DSF Consulting / AirFun1311  
+* **Standort**: Fürth / Metropolregion Nürnberg, Franken, Deutschland  
+* **Lizenz- und Sicherheitsanfragen**: `sf.foodzeit@googlemail.com`  
+* **Rechtlicher Hinweis**: Dieses System führt eine technische Bestandsaufnahme durch. Für rechtlich verbindliche Gutachten wird die Hinzuziehung eines zertifizierten Datenschutzbeauftragten oder Fachanwalts empfohlen.
 
 ---
 
 <div align="center">
-  <sub>Maintained by <a href="https://github.com/AirFun1311">AirFun1311 / DSF Consulting</a> • Fuerth, Germany</sub>
+  <sub>Entwickelt mit deutscher Ingenieurs-Gründlichkeit • DSF Consulting • Fürth, Deutschland</sub>
 </div>
