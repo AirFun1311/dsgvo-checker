@@ -16,7 +16,6 @@ from report_pdf import generate_pdf_report
 
 st.set_page_config(
     page_title="DSF DSGVO Compliance Scanner",
-    page_icon="🔒",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -26,20 +25,21 @@ st.markdown(
     """
     <style>
     .main-header {
-        font-size: 2.2rem;
+        font-size: 2.0rem;
         font-weight: 700;
         margin-bottom: 0.2rem;
+        letter-spacing: -0.5px;
     }
     .sub-header {
-        font-size: 1.1rem;
-        color: #6c757d;
+        font-size: 1.05rem;
+        color: #555555;
         margin-bottom: 1.5rem;
     }
     .metric-card {
         background-color: #f8f9fa;
-        border-radius: 8px;
+        border-radius: 4px;
         padding: 1rem;
-        border-left: 5px solid #0d6efd;
+        border-left: 4px solid #0f3460;
     }
     </style>
     """,
@@ -47,7 +47,7 @@ st.markdown(
 )
 
 # Header
-st.markdown('<div class="main-header">🔒 DSF DSGVO / GDPR Compliance Scanner</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">DSF DSGVO / GDPR Compliance Scanner</div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="sub-header">Automated zero-trust privacy and technical compliance auditing for web assets.</div>',
     unsafe_allow_html=True,
@@ -55,7 +55,7 @@ st.markdown(
 
 # Sidebar
 with st.sidebar:
-    st.header("⚙️ Audit-Konfiguration")
+    st.header("Audit-Konfiguration")
     website_url = st.text_input("Website URL", "https://example.com")
     
     use_browser = st.toggle("Playwright Browser-Rendering (JS)", value=True, help="Aktiviert Headless Chromium zur Erkennung dynamischer Tracker")
@@ -65,7 +65,7 @@ with st.sidebar:
     st.caption("• Art. 32 DSGVO (TOM & TLS)\n• Art. 13 DSGVO (Transparenz)\n• § 25 TDDDG (Cookies & Telemetrie)\n• BGH & EuGH Rechtsprechung")
     
     st.divider()
-    start_scan = st.button("🚀 Audit Starten", type="primary", use_container_width=True)
+    start_scan = st.button("Audit Starten", type="primary", use_container_width=True)
 
 if "scan_result" not in st.session_state:
     st.session_state.scan_result = None
@@ -83,21 +83,21 @@ res: ScanResult = st.session_state.scan_result
 
 if res:
     # Top KPI Metrics
-    st.header(f"📊 Audit-Ergebnis: {res.final_url or res.url}")
-    st.caption(f"Scan-ID: `{res.scan_id}` | Datum: {res.scan_date} | Engine: {res.meta.get('engine', 'DSF-PRO-CORE')}")
+    st.header(f"Audit-Ergebnis: {res.final_url or res.url}")
+    st.caption(f"Scan-ID: {res.scan_id} | Datum: {res.scan_date} | Engine: {res.meta.get('engine', 'DSF-PRO-CORE')}")
     
     col1, col2, col3, col4 = st.columns(4)
     
-    # Color mapping according to German risk levels
-    risk_color = {
-        "HOCH": "🔴",
-        "MITTEL": "🟡",
-        "NIEDRIG": "🟢",
-        "SEHR NIEDRIG": "🟢",
-    }.get(res.risk_level, "⚪")
+    # Severity label mapping
+    risk_label = {
+        "HOCH": "[HOCH]",
+        "MITTEL": "[MITTEL]",
+        "NIEDRIG": "[NIEDRIG]",
+        "SEHR NIEDRIG": "[SEHR NIEDRIG]",
+    }.get(res.risk_level, "[UNBEKANNT]")
     
     with col1:
-        st.metric("Risikostufe", f"{risk_color} {res.risk_level}", f"Score: {res.risk_score}/100")
+        st.metric("Risikostufe", f"{risk_label} {res.risk_level}", f"Score: {res.risk_score}/100")
     with col2:
         st.metric("Prüfpunkte Gesamt", len(res.checks), f"Fehlgeschlagen: {res.summary.get('checks_fail', 0)}")
     with col3:
@@ -109,20 +109,20 @@ if res:
     
     # Detailed Tabs
     tab_checks, tab_trackers, tab_recommendations, tab_export = st.tabs([
-        "📋 Prüfergebnisse", 
-        "🌐 Drittanbieter & Cookies", 
-        "💡 Handlungsempfehlungen", 
-        "📥 Berichte & Export"
+        "Prüfergebnisse", 
+        "Drittanbieter & Cookies", 
+        "Handlungsempfehlungen", 
+        "Berichte & Export"
     ])
     
     with tab_checks:
         st.subheader("Detailergebnisse der Compliance-Prüfungen")
         for chk in res.checks:
-            status_icon = "✅" if chk.status == "PASS" else "❌" if chk.status == "FAIL" else "⚠️" if chk.status == "WARNING" else "ℹ️"
-            with st.expander(f"{status_icon} {chk.title} — [{chk.status}] (Strafe: {chk.penalty} Pkt.)"):
+            status_tag = f"[{chk.status}]"
+            with st.expander(f"{status_tag} {chk.title} (Strafe: {chk.penalty} Pkt.)"):
                 st.write(f"**Details:** {chk.detail}")
                 if chk.rechtsgrundlage:
-                    st.write(f"**Rechtsgrundlage:** `{chk.rechtsgrundlage}`")
+                    st.write(f"**Rechtsgrundlage:** {chk.rechtsgrundlage}")
                 if chk.empfehlung:
                     st.info(f"**Empfehlung:** {chk.empfehlung}")
                 if chk.sub_findings:
@@ -151,8 +151,8 @@ if res:
         if top_recs:
             for i, rec in enumerate(top_recs, 1):
                 prio = rec.get("prioritaet", "MITTEL")
-                badge = "🔴 HOCH" if prio == "HOCH" else "🟡 MITTEL" if prio == "MITTEL" else "🟢 NIEDRIG"
-                st.markdown(f"**{i}. {rec.get('bereich', 'Bereich')}** [{badge}]")
+                badge = f"[{prio}]"
+                st.markdown(f"**{i}. {rec.get('bereich', 'Bereich')}** {badge}")
                 st.write(f"{rec.get('massnahme', '')}")
                 st.markdown("---")
         else:
@@ -164,16 +164,13 @@ if res:
         col_pdf, col_json = st.columns(2)
         
         with col_pdf:
-            # Generate in-memory PDF
             try:
-                pdf_bytes = io.BytesIO()
-                # Run PDF generation to a temp path or stream
                 temp_pdf_name = f"audit_{res.scan_id}.pdf"
                 generate_pdf_report(res, temp_pdf_name)
                 with open(temp_pdf_name, "rb") as f:
                     pdf_data = f.read()
                 st.download_button(
-                    label="📄 PDF-Auditbericht herunterladen",
+                    label="PDF-Auditbericht herunterladen",
                     data=pdf_data,
                     file_name=f"DSF_DSGVO_Audit_{res.scan_id}.pdf",
                     mime="application/pdf",
@@ -186,7 +183,7 @@ if res:
         with col_json:
             json_str = json.dumps(res.to_dict() if hasattr(res, "to_dict") else res.__dict__, indent=2, default=str)
             st.download_button(
-                label="📊 JSON-Auditdaten exportieren",
+                label="JSON-Auditdaten exportieren",
                 data=json_str,
                 file_name=f"DSF_DSGVO_Data_{res.scan_id}.json",
                 mime="application/json",
@@ -196,15 +193,15 @@ if res:
 else:
     # Default Welcome & Information
     st.markdown("""
-    ### 🎯 Warum automatisierte DSGVO-Audits unverzichtbar sind
+    ### Warum automatisierte DSGVO-Audits unverzichtbar sind
     
-    * **Bußgeldrisiken minimieren:** DSGVO Art. 83 sieht Bußgelder von bis zu 20 Mio. € oder 4 % des weltweiten Jahresumsatzes vor.
+    * **Bußgeldrisiken minimieren:** DSGVO Art. 83 sieht Bußgelder von bis zu 20 Mio. EUR oder 4 % des weltweiten Jahresumsatzes vor.
     * **§ 25 TDDDG Konformität:** Externe Dienste und Tracker dürfen erst nach aktiver, informierter Einwilligung geladen werden.
     * **Technisch-Organisatorische Maßnahmen (Art. 32):** Moderne TLS-Verschlüsselung und Security Header (HSTS, CSP) sind Pflicht.
     
     ---
     
-    ### 🛠️ Was dieses System prüft:
+    ### Was dieses System prüft:
     1. **HTTPS, HSTS & TLS-Zertifikatsvalidierung**
     2. **Security Header (CSP, X-Frame-Options, Permissions-Policy)**
     3. **Drittanbieter-Erkennung (Google Fonts, Meta Pixel, Analytics, CDNs)**
@@ -213,4 +210,4 @@ else:
     """)
 
 st.markdown("---")
-st.caption("DSF DSGVO Compliance Platform • Zero Trust Architecture • (c) 2026 DSF Consulting")
+st.caption("DSF DSGVO Compliance Platform | Zero Trust Architecture | (c) 2026 DSF Consulting")

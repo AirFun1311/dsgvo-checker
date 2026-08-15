@@ -19,31 +19,32 @@
   Performs deep inspections for GDPR/DSGVO non-compliance, unconsented third-party trackers, external font leakage, and cryptographic misconfigurations.
 </p>
 
-[Quickstart](#quickstart) • [Lizenz & Preise](#-lizenzierung--konditionen-source-available) • [Architecture](#system-architecture) • [CLI Security Gate](#command-line-interface-cli) • [Docker Deployment](#docker-deployment)
+[Quickstart](#quickstart) • [Lizenz & Preise](#lizenzierung--konditionen-source-available) • [Architecture](#system-architecture) • [CLI Security Gate](#command-line-interface-cli) • [Docker Deployment](#docker-deployment)
 
 </div>
 
 ---
 
-## 💼 Lizenzierung & Konditionen (Source-Available)
+## Lizenzierung & Konditionen (Source-Available)
 
 > **Entwickelt für professionelle Auditoren, IT-Dienstleister & Unternehmen.**  
 > In diese Compliance-Engine sind monatelange intensive Forschung, detaillierte Gesetzestexte (DSGVO, § 25 TDDDG, EU AI Act 2026) und modernste DevSecOps-Standards eingeflossen.  
 > 
 > Um eine kontinuierliche Pflege und Weiterentwicklung zu gewährleisten, wird diese Software als **Source-Available Commercial Software** lizenziert. Jede Nutzung unterliegt einer fairen Lizenzierung.
 
-### 📋 Übersicht der Lizenzmodelle
+### Übersicht der Lizenzmodelle
 
 | Lizenz / Modell | Zielgruppe & Berechtigung | Preis | Bezugsweg |
 | :--- | :--- | :---: | :--- |
-| **🎓 Personal / Student & Research** | Für Einzelpersonen, Studenten & Forscher zur persönlichen Weiterbildung & nicht-kommerziellen Analyse. | **29 €** *(einmalig)* | Per E-Mail / Invoice |
-| **🏢 Commercial Single-Domain** | Für 1 Unternehmen / Selbstständigen zur eigenständigen Prüfung & Absicherung der eigenen Firmen-Domain. | **129 €** *(einmalig)* | Per E-Mail / Invoice |
-| **🚀 Agency & Consultant Pro** | Für Webagenturen & IT-Consultants. Unbegrenzte Scans für Kunden-Websites inklusive White-Label PDF-Export. | **390 €** *(einmalig)* | Per E-Mail / Invoice |
-| **📄 Done-For-You Audit-Service** | Vollständiges Turnkey-Audit durch den Autor inklusive verifiziertem 10-seitigen PDF-Prüfbericht. | **190 €** *(pro Domain)* | Per E-Mail / Invoice |
+| **Personal / Student & Research** | Für Einzelpersonen, Studenten & Forscher zur persönlichen Weiterbildung & nicht-kommerziellen Analyse. | **29 €** *(einmalig)* | Per E-Mail / Invoice |
+| **Commercial Single-Domain** | Für 1 Unternehmen / Selbstständigen zur eigenständigen Prüfung & Absicherung der eigenen Firmen-Domain. | **129 €** *(einmalig)* | Per E-Mail / Invoice |
+| **Agency & Consultant Pro** | Für Webagenturen & IT-Consultants. Unbegrenzte Scans für Kunden-Websites inklusive White-Label PDF-Export. | **390 €** *(einmalig)* | Per E-Mail / Invoice |
+| **Done-For-You Audit-Service** | Vollständiges Turnkey-Audit durch den Autor inklusive verifiziertem 10-seitigen PDF-Prüfbericht. | **190 €** *(pro Domain)* | Per E-Mail / Invoice |
 
-📬 **Lizenzanfragen & offizielle Rechnung:**  
+**Lizenzanfragen & offizielle Rechnung:**  
 Bestellungen und Autorisierungsanfragen richten Sie bitte formlos per E-Mail an: `sf.foodzeit@googlemail.com`  
 *(Zahlung flexibel per Banküberweisung, PayPal oder Stripe. Ausgewiesene Rechnung & Lizenzzertifikat werden direkt ausgestellt.)*
+
 
 
 
@@ -279,7 +280,7 @@ bandit -r . -ll -ii
 
 ## License
 
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for complete terms.
+Distributed under the **DSF Commercial & Personal Source-Available License**. See [`LICENSE`](LICENSE) for complete terms.
 
 ---
 
