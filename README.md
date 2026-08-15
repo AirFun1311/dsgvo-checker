@@ -12,39 +12,39 @@
 [![SBOM SPDX 2.3](https://img.shields.io/badge/SBOM-SPDX%202.3%20Automated-8250df.svg)](https://spdx.dev/)
 [![Python Version](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Docker Ready](https://img.shields.io/badge/container-docker-2496ED.svg?logo=docker&logoColor=white)](Dockerfile)
-[![License: Dual PolyForm / Commercial](https://img.shields.io/badge/License-Dual%20(PolyForm%20%2F%20Commercial)-orange.svg)](LICENSE)
+[![License: Commercial Source-Available](https://img.shields.io/badge/License-Commercial%20Source--Available-blue.svg)](LICENSE)
 
 <p align="center">
   <strong>Production-grade automated compliance scanner designed for German & European SMEs, DPOs, and DevSecOps pipelines.</strong><br>
   Performs deep inspections for GDPR/DSGVO non-compliance, unconsented third-party trackers, external font leakage, and cryptographic misconfigurations.
 </p>
 
-[Quickstart](#quickstart) • [Lizenz & Preise](#-über-dieses-projekt--lizenzierung-fair-code) • [Architecture](#system-architecture) • [CLI Security Gate](#command-line-interface-cli) • [Docker Deployment](#docker-deployment)
+[Quickstart](#quickstart) • [Lizenz & Preise](#-lizenzierung--konditionen-source-available) • [Architecture](#system-architecture) • [CLI Security Gate](#command-line-interface-cli) • [Docker Deployment](#docker-deployment)
 
 </div>
 
 ---
 
-## ☕ Über dieses Projekt & Lizenzierung (Fair-Code)
+## 💼 Lizenzierung & Konditionen (Source-Available)
 
-> **Hi! Ich bin ein unabhängiger Entwickler & IT-Enthusiast aus Deutschland.**  
-> Ich habe monatelang Gesetzestexte (DSGVO, § 25 TDDDG, EU AI Act 2026) und Web-Sicherheitsstandards studiert und diese Engine von Grund auf entwickelt, um Websites automatisiert, unabhängig und deterministisch auf Datenschutzrisiken zu prüfen.
+> **Entwickelt für professionelle Auditoren, IT-Dienstleister & Unternehmen.**  
+> In diese Compliance-Engine sind monatelange intensive Forschung, detaillierte Gesetzestexte (DSGVO, § 25 TDDDG, EU AI Act 2026) und modernste DevSecOps-Standards eingeflossen.  
 > 
-> * **Für Privatpersonen, Bildung, Open-Source & Sicherheitsforscher:** 100 % kostenlos und frei zugänglich ([PolyForm Noncommercial 1.0.0](LICENSE)).
-> * **Für kommerzielle Nutzung (Unternehmen, Selbstständige & Webagenturen):** Wenn dir dieses Werkzeug hilft, dein Unternehmen abzusichern, Zeit zu sparen oder kommerzielle Dienstleistungen anzubieten, erwerbe bitte eine faire Lizenz zur Unterstützung der Weiterentwicklung.
+> Um eine kontinuierliche Pflege und Weiterentwicklung zu gewährleisten, wird diese Software als **Source-Available Commercial Software** lizenziert. Jede Nutzung unterliegt einer fairen Lizenzierung.
 
-### 💼 Übersicht: Faire kommerzielle Lizenzen & Services
+### 📋 Übersicht der Lizenzmodelle
 
-| Lizenz / Service | Zielgruppe & Leistungsumfang | Preis | Bezugsweg |
+| Lizenz / Modell | Zielgruppe & Berechtigung | Preis | Bezugsweg |
 | :--- | :--- | :---: | :--- |
-| **☕ Community / Non-Commercial** | Privatpersonen, Studenten, gemeinnützige Forschung & Non-Profits | **0 €** | Direkt über GitHub |
-| **🏢 Commercial Single-License** | Für 1 Unternehmen / Selbstständigen zur Absicherung der eigenen Webpräsenz. Unbegrenzte interne Scans. | **129 €** *(einmalig)* | Per E-Mail / Invoice |
-| **🚀 Agency & Consultant Pro** | Für Webagenturen & IT-Dienstleister. Unbegrenzte Scans für Kunden-Websites & White-Label PDF-Reports. | **390 €** *(einmalig)* | Per E-Mail / Invoice |
-| **📄 Done-For-You Audit-Service** | Du hast keine Lust auf Terminal/Python? Schick deine URL, wir führen das Audit durch und senden dir das detaillierte PDF. | **190 €** *(pro Domain)* | Per E-Mail / Invoice |
+| **🎓 Personal / Student & Research** | Für Einzelpersonen, Studenten & Forscher zur persönlichen Weiterbildung & nicht-kommerziellen Analyse. | **29 €** *(einmalig)* | Per E-Mail / Invoice |
+| **🏢 Commercial Single-Domain** | Für 1 Unternehmen / Selbstständigen zur eigenständigen Prüfung & Absicherung der eigenen Firmen-Domain. | **129 €** *(einmalig)* | Per E-Mail / Invoice |
+| **🚀 Agency & Consultant Pro** | Für Webagenturen & IT-Consultants. Unbegrenzte Scans für Kunden-Websites inklusive White-Label PDF-Export. | **390 €** *(einmalig)* | Per E-Mail / Invoice |
+| **📄 Done-For-You Audit-Service** | Vollständiges Turnkey-Audit durch den Autor inklusive verifiziertem 10-seitigen PDF-Prüfbericht. | **190 €** *(pro Domain)* | Per E-Mail / Invoice |
 
-📬 **Lizenzkauf & offizielle Rechnung (mit USt.):**  
-Einfach unkompliziert per E-Mail an: `sf.foodzeit@googlemail.com`  
-*(Zahlung flexibel per Banküberweisung, PayPal oder Stripe. Autorisierungszertifikat wird ausgestellt.)*
+📬 **Lizenzanfragen & offizielle Rechnung:**  
+Bestellungen und Autorisierungsanfragen richten Sie bitte formlos per E-Mail an: `sf.foodzeit@googlemail.com`  
+*(Zahlung flexibel per Banküberweisung, PayPal oder Stripe. Ausgewiesene Rechnung & Lizenzzertifikat werden direkt ausgestellt.)*
+
 
 
 ---
