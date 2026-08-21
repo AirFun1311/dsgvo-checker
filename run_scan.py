@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
 """
-DSF DSGVO / GDPR Compliance Verification Engine - CLI Orchestrator
-==================================================================
-Production-grade command-line interface for automated website auditing,
-CI/CD security gates, and multi-format compliance report generation.
+DSGVO-Checker - Kommandozeile
+=============================
+Prueft eine Website auf typische Datenschutz-Probleme und erstellt auf Wunsch
+einen Bericht als PDF oder JSON.
 
-Usage:
-    python run_scan.py <url> [OPTIONS]
+Aufruf:
+    python run_scan.py <adresse> [optionen]
 
-Examples:
-    # Standard terminal audit
-    python run_scan.py https://example.com
+Beispiele:
+    # Einfacher Check im Terminal
+    python run_scan.py https://beispiel.de
 
-    # Generate both JSON and PDF audit reports
-    python run_scan.py https://example.com --pdf --json -o ./audit-results/
+    # Kostenloser Bericht als PDF
+    python run_scan.py https://beispiel.de --pdf
 
-    # CI/CD Security Gate: Fail build if risk score >= 35 or if high-risk violation exists
-    python run_scan.py https://example.com --fail-on-risk 35 --fail-on-high --no-js
+    # Vollstaendiger Bericht mit Schritt-fuer-Schritt-Anleitung (verkaufbare Version)
+    python run_scan.py https://beispiel.de --pdf --full
 
-Exit Codes:
-    0: Success - Compliance checks passed within acceptable risk threshold
-    1: Compliance Failure - Violations exceeded defined risk threshold
-    2: Runtime Error - Network failure, invalid URL, or scanner crash
+    # Fuer automatische Ablaeufe: abbrechen ab Risiko 35
+    python run_scan.py https://beispiel.de --fail-on-risk 35 --fail-on-high --no-js
+
+Rueckgabe-Codes:
+    0: In Ordnung - Risiko unter der Schwelle
+    1: Zu hohes Risiko - Schwelle ueberschritten
+    2: Fehler - z.B. Seite nicht erreichbar oder falsche Adresse
+
+(c) 2026 DSF Consulting
 """
 
 import argparse
@@ -35,57 +40,62 @@ from report_pdf import generate_report
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="dsgvo-scanner",
-        description="DSF DSGVO / GDPR Compliance Scanner & CI/CD Security Gate",
+        prog="dsgvo-checker",
+        description="DSGVO-Checker - Datenschutz-Pruefung fuer Websites",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Exit Codes:
-  0  Success / Compliant (Risk within acceptable threshold)
-  1  Threshold Exceeded (High risk violations or risk score exceeded)
-  2  Execution / Network / Argument Error
+Rueckgabe-Codes:
+  0  In Ordnung (Risiko unter der Schwelle)
+  1  Zu hohes Risiko (Schwelle ueberschritten)
+  2  Fehler (Netzwerk, Adresse oder Absturz)
 
-(c) 2026 DSF Consulting | AF13 Enterprise Systems Architecture
+(c) 2026 DSF Consulting
         """,
     )
-    parser.add_argument("url", help="Target website URL to scan (e.g., https://example.de)")
+    parser.add_argument("url", help="Adresse der zu pruefenden Website (z.B. https://beispiel.de)")
     parser.add_argument(
         "--no-js",
         action="store_true",
-        help="Disable JavaScript headless browser rendering (fast HTTP fallback mode)",
+        help="Ohne Browser pruefen (schneller, aber erkennt weniger)",
     )
     parser.add_argument(
         "--json",
         action="store_true",
-        help="Export comprehensive scan results as machine-readable JSON",
+        help="Ergebnis zusaetzlich als JSON-Datei speichern",
     )
     parser.add_argument(
         "--pdf",
         action="store_true",
-        help="Generate an audit-ready executive PDF compliance report",
+        help="Bericht als PDF erstellen",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Vollstaendige Version mit Schritt-fuer-Schritt-Anleitung (verkaufbarer Bericht)",
     )
     parser.add_argument(
         "--output-dir",
         "-o",
         default=".",
-        help="Directory to save exported JSON/PDF reports (default: current directory)",
+        help="Ordner fuer die Berichte (Standard: aktueller Ordner)",
     )
     parser.add_argument(
         "--fail-on-risk",
         type=int,
-        metavar="SCORE",
+        metavar="WERT",
         default=None,
-        help="Exit with code 1 if total risk score is equal to or exceeds SCORE (0-100)",
+        help="Mit Code 1 abbrechen, wenn das Risiko den WERT erreicht (0-100)",
     )
     parser.add_argument(
         "--fail-on-high",
         action="store_true",
-        help="Exit with code 1 if any high-risk violation or overall HIGH risk rating is detected",
+        help="Mit Code 1 abbrechen, wenn ein hohes Risiko erkannt wird",
     )
     parser.add_argument(
         "--quiet",
         "-q",
         action="store_true",
-        help="Quiet mode: suppress non-essential output (optimized for CI/CD pipelines)",
+        help="Stiller Modus: weniger Ausgabe (fuer automatische Ablaeufe)",
     )
 
     return parser.parse_args()
@@ -94,7 +104,7 @@ Exit Codes:
 def main() -> int:
     args = parse_arguments()
 
-    # Ensure output directory exists if files are to be written
+    # Ausgabe-Ordner anlegen, falls Dateien geschrieben werden
     out_dir = Path(args.output_dir)
     if args.json or args.pdf:
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -103,67 +113,69 @@ def main() -> int:
 
     if not args.quiet:
         print("\n=======================================================")
-        print("  DSF DSGVO / GDPR Compliance Verification Engine (v2.0)")
+        print("  DSGVO-Checker (DSF Consulting)")
         print("=======================================================")
-        print(f"  Target URL:   {args.url}")
-        print(f"  Engine Mode:  {'Headless Playwright (JavaScript)' if use_js else 'HTTP Fallback (Static DOM)'}")
-        print("  Audit in progress...\n")
+        print(f"  Adresse:  {args.url}")
+        print(f"  Modus:    {'Mit Browser (genauer)' if use_js else 'Ohne Browser (schnell)'}")
+        print("  Pruefung laeuft...\n")
 
     try:
         scanner = DSGVOScanner(args.url, use_playwright=use_js)
         result = scanner.scan()
     except Exception as exc:
-        print(f"[ERROR] Scanner execution failed: {exc}", file=sys.stderr)
+        print(f"[FEHLER] Pruefung fehlgeschlagen: {exc}", file=sys.stderr)
         return 2
 
-    # Render terminal report
+    # Bericht im Terminal anzeigen
     if not args.quiet:
         scanner.print_report()
     else:
-        print(f"[AUDIT] URL: {result.url} | Score: {result.risk_score}/100 | Severity: {result.risk_level}")
+        print(f"[CHECK] Adresse: {result.url} | Risiko: {result.risk_score}/100 | Stufe: {result.risk_level}")
 
-    # Generate output file basename
+    # Dateiname fuer die Berichte
     domain = result.final_url or result.url
     domain_clean = domain.replace("https://", "").replace("http://", "").replace("/", "_").rstrip("_")
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     basename = f"DSGVO_Scan_{domain_clean}_{timestamp}"
 
-    # JSON export
+    # JSON speichern
     if args.json:
         json_path = out_dir / f"{basename}.json"
         scanner.to_json(str(json_path))
         if not args.quiet:
-            print(f"  [EXPORT] JSON saved: {json_path}")
+            print(f"  [GESPEICHERT] JSON: {json_path}")
 
-    # PDF export
+    # PDF erstellen
     if args.pdf:
-        pdf_path = out_dir / f"{basename}.pdf"
-        generate_report(scanner.to_dict(), str(pdf_path))
+        suffix = "_vollstaendig" if args.full else ""
+        pdf_path = out_dir / f"{basename}{suffix}.pdf"
+        generate_report(scanner.to_dict(), str(pdf_path), full=args.full)
         if not args.quiet:
-            print(f"  [EXPORT] PDF saved:  {pdf_path}")
+            art = "Vollversion mit Anleitung" if args.full else "Kurzbericht"
+            print(f"  [GESPEICHERT] PDF ({art}):  {pdf_path}")
 
     if (args.json or args.pdf) and not args.quiet:
         print()
 
-    # CI/CD Security Gate Evaluation
+    # Abbruch-Schwelle pruefen (fuer automatische Ablaeufe)
     has_high_risk = result.risk_level == "HOCH" or any(
         getattr(c, "status", None) == "FAIL" and getattr(c, "penalty", 0) >= 25 for c in result.checks
     )
 
     if args.fail_on_high and has_high_risk:
         if not args.quiet:
-            print("[CI GATE FAILED] High-severity compliance violation detected.", file=sys.stderr)
+            print("[ABBRUCH] Hohes Datenschutz-Risiko erkannt.", file=sys.stderr)
         return 1
 
     if args.fail_on_risk is not None and result.risk_score >= args.fail_on_risk:
         if not args.quiet:
             print(
-                f"[CI GATE FAILED] Risk score {result.risk_score} exceeds defined threshold {args.fail_on_risk}.",
+                f"[ABBRUCH] Risiko {result.risk_score} erreicht die Schwelle {args.fail_on_risk}.",
                 file=sys.stderr,
             )
         return 1
 
-    # Default fallback threshold
+    # Standard-Schwelle
     return 0 if result.risk_score < 40 else 1
 
 

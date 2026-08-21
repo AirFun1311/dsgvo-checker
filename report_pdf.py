@@ -1,628 +1,558 @@
 #!/usr/bin/env python3
 """
-DSF DSGVO Compliance Report -- PDF Generator
-=============================================
-Professioneller PDF-Report mit Ampelsystem.
-
-(c) 2026 DSF Consulting - AF13-NEXUS
+DSGVO-Checker - PDF-Bericht (klares, ruhiges Design)
+====================================================
+(c) 2026 DSF Consulting
 """
 
-from datetime import datetime, timezone
+from urllib.parse import quote
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm, cm
+from reportlab.lib.units import mm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
+from reportlab.lib.enums import TA_LEFT, TA_JUSTIFY
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    PageBreak, HRFlowable, KeepTogether
+    PageBreak, HRFlowable,
 )
-from reportlab.pdfgen import canvas
 
+CONTACT = "sf.foodzeit@googlemail.com"
 
-# =============================================================================
-# FARBEN
-# =============================================================================
+# ── Farben: ruhig, monochrom + gedeckte Status-Toene ───────────────────────
+INK      = colors.HexColor("#14161a")   # fast schwarz
+MUTED    = colors.HexColor("#6b7280")   # grau fuer Nebeninfos
+HAIRLINE = colors.HexColor("#e5e7eb")   # feine Linien
+SOFT_BG  = colors.HexColor("#f7f8fa")   # sehr helles Grau fuer Flaechen
+WHITE    = colors.white
 
-DSF_DARK    = colors.HexColor("#1a1a2e")
-DSF_BLUE    = colors.HexColor("#16213e")
-DSF_ACCENT  = colors.HexColor("#0f3460")
-DSF_LIGHT   = colors.HexColor("#e8e8e8")
-DSF_WHITE   = colors.white
+C_OK    = colors.HexColor("#1a7f4b")    # gedecktes gruen
+C_WARN  = colors.HexColor("#b45309")    # gedecktes bernstein
+C_FAIL  = colors.HexColor("#b3261e")    # ruhiges rot
+C_INFO  = colors.HexColor("#6b7280")    # neutral
 
-COLOR_PASS    = colors.HexColor("#2d6a4f")
-COLOR_WARNING = colors.HexColor("#e07c24")
-COLOR_FAIL    = colors.HexColor("#c0392b")
-COLOR_INFO    = colors.HexColor("#2980b9")
-COLOR_GRAY    = colors.HexColor("#7f8c8d")
+RISK_COLOR = {
+    "HOCH":         C_FAIL,
+    "MITTEL":       C_WARN,
+    "NIEDRIG":      C_OK,
+    "SEHR NIEDRIG": C_OK,
+    "UNBEKANNT":    MUTED,
+}
+STATUS_COLOR = {"PASS": C_OK, "WARNING": C_WARN, "FAIL": C_FAIL, "INFO": C_INFO, "SKIPPED": MUTED}
+STATUS_LABEL = {"PASS": "OK", "WARNING": "Hinweis", "FAIL": "Handlungsbedarf", "INFO": "Info", "SKIPPED": "-"}
 
-RISK_COLORS = {
-    "HOCH":         colors.HexColor("#c0392b"),
-    "MITTEL":       colors.HexColor("#e07c24"),
-    "NIEDRIG":      colors.HexColor("#27ae60"),
-    "SEHR NIEDRIG": colors.HexColor("#2d6a4f"),
-    "UNBEKANNT":    colors.HexColor("#7f8c8d"),
+# ── Anleitungen fuer den bezahlten Bericht: pro Pruefpunkt, konkret ─────────
+REMEDIATION = {
+    "privacy_policy": {
+        "titel": "Datenschutzerklaerung vervollstaendigen",
+        "schritte": [
+            "Erstellen Sie eine vollstaendige Datenschutzerklaerung. Seriose, kostenlose Generatoren: e-recht24.de oder datenschutz-generator.de. Beantworten Sie die Fragen zu Ihrer Website ehrlich.",
+            "Stellen Sie sicher, dass diese Pflichtangaben enthalten sind: Name und Kontakt des Verantwortlichen, Zweck und Rechtsgrundlage, Speicherdauer, Ihre Rechte (Auskunft, Loeschung, Widerspruch), zustaendige Aufsichtsbehoerde und alle eingesetzten Dienste (z. B. Google, Meta) samt Uebermittlung in die USA.",
+            "Veroeffentlichen Sie die Erklaerung als eigene Seite und verlinken Sie sie im Fussbereich JEDER Seite.",
+        ],
+        "tipp": "WordPress: Seite „Datenschutz“ anlegen, Text einfuegen, im Footer-Widget verlinken.",
+        "fertig": "Die Seite ihre-domain.de/datenschutz existiert und enthaelt alle genannten Punkte.",
+    },
+    "third_parties": {
+        "titel": "Externe Dienste entschaerfen (Google Fonts & Co.)",
+        "schritte": [
+            "Google Fonts lokal einbinden: Schrift bei gwfh.mranftl.com herunterladen, Dateien auf Ihren Server legen, per @font-face einbinden und den Verweis auf fonts.googleapis.com entfernen.",
+            "Fuer jeden US-Dienst (Google, Meta, LinkedIn) pruefen, ob Sie ihn wirklich brauchen. Wenn ja: Auftragsverarbeitungsvertrag (AVV) abschliessen und die Uebermittlung auf die EU-Standardvertragsklauseln (SCC) stuetzen.",
+            "Diese Dienste erst NACH Einwilligung des Besuchers laden (siehe naechster Punkt).",
+        ],
+        "tipp": "WordPress: Das Plugin „OMGF“ bindet Google Fonts automatisch lokal ein.",
+        "fertig": "Im Browser mit F12 → Netzwerk erscheint beim Neuladen keine Anfrage mehr an fonts.googleapis.com.",
+    },
+    "tracking": {
+        "titel": "Tracking nur mit Einwilligung",
+        "schritte": [
+            "Ein Einwilligungs-Tool (Consent-Banner) installieren: z. B. Borlabs Cookie, Complianz, Cookiebot oder Usercentrics.",
+            "So einstellen, dass ALLE nicht-notwendigen Dienste (Google Ads, Meta Pixel, LinkedIn) erst laden, wenn der Besucher aktiv zustimmt. Vorangekreuzte Haekchen sind nicht erlaubt.",
+            "Jeden Dienst in die Datenschutzerklaerung eintragen – mit Zweck, Rechtsgrundlage (Einwilligung, Art. 6 Abs. 1 lit. a) und Hinweis auf die USA-Uebermittlung.",
+        ],
+        "tipp": "Testen Sie im privaten Browserfenster: Vor dem Klick auf „Zustimmen“ darf kein Tracker laden.",
+        "fertig": "Ohne Einwilligung werden keine Tracker geladen, und alle Dienste stehen in der Datenschutzerklaerung.",
+    },
+    "consent": {
+        "titel": "Cookie-Einwilligung einrichten",
+        "schritte": [
+            "Ein Consent-Tool installieren (Borlabs, Complianz, Cookiebot, Usercentrics).",
+            "So konfigurieren, dass nicht-notwendige Cookies erst nach aktiver Zustimmung gesetzt werden.",
+        ],
+        "tipp": "Das Banner sollte gleichwertige Buttons „Zustimmen“ und „Ablehnen“ haben.",
+        "fertig": "Vor der Zustimmung werden keine nicht-notwendigen Cookies gesetzt.",
+    },
+    "security_headers": {
+        "titel": "Sicherheits-Header ergaenzen",
+        "schritte": [
+            "Die fehlenden Header in der Server-Konfiguration ergaenzen. Wichtig: Content-Security-Policy, Referrer-Policy (Empfehlung: strict-origin-when-cross-origin), Permissions-Policy.",
+            "Apache: in die .htaccess eintragen. nginx: per add_header im server-Block. Im Zweifel Ihren Hoster fragen.",
+        ],
+        "tipp": "WordPress: Plugins wie „Really Simple Security“ setzen viele Header automatisch.",
+        "fertig": "Auf securityheaders.com erreicht Ihre Seite mindestens Note B.",
+    },
+    "forms": {
+        "titel": "Formulare mit Datenschutzhinweis versehen",
+        "schritte": [
+            "Bei jedem Formular mit personenbezogenen Feldern (Name, E-Mail) einen kurzen Datenschutzhinweis direkt darunter einfuegen – mit Link zur Datenschutzerklaerung.",
+            "Formulierung z. B.: „Mit dem Absenden stimmen Sie der Verarbeitung Ihrer Daten gemaess unserer Datenschutzerklaerung zu.“",
+        ],
+        "tipp": "Empfehlenswert ist zusaetzlich eine Pflicht-Checkbox zur Einwilligung.",
+        "fertig": "Jedes Formular zeigt sichtbar einen Datenschutzhinweis mit Link.",
+    },
+    "impressum": {
+        "titel": "Impressum vervollstaendigen",
+        "schritte": [
+            "Fehlende Pflichtangaben ergaenzen. Haeufig fehlt die Vertretung (Geschaeftsfuehrer / Inhaber).",
+            "Ein vollstaendiges Impressum enthaelt: Name/Firma, ladungsfaehige Anschrift, Kontakt (Telefon + E-Mail), ggf. Handelsregister + Nummer, ggf. USt-IdNr., Vertretungsberechtigte.",
+        ],
+        "tipp": "Kostenloser Impressum-Generator: e-recht24.de.",
+        "fertig": "ihre-domain.de/impressum enthaelt alle Pflichtangaben.",
+    },
+    "https": {
+        "titel": "HTTPS erzwingen",
+        "schritte": [
+            "Kostenloses SSL-Zertifikat (Let's Encrypt) bei Ihrem Hoster aktivieren – meist ein Klick im Hosting-Panel.",
+            "Alle Aufrufe von http auf https umleiten (Hoster-Einstellung oder .htaccess).",
+        ],
+        "tipp": "WordPress: Plugin „Really Simple SSL“ stellt automatisch um.",
+        "fertig": "Ihre Seite ist nur noch ueber https erreichbar (Schloss-Symbol im Browser).",
+    },
+    "ssl": {
+        "titel": "Verschluesselung aktuell halten",
+        "schritte": [
+            "Beim Hoster pruefen, dass TLS 1.2/1.3 aktiv und TLS 1.0/1.1 abgeschaltet sind.",
+            "Automatische Zertifikatsverlaengerung sicherstellen (bei Let's Encrypt Standard).",
+        ],
+        "tipp": "Testen Sie Ihre Seite auf ssllabs.com/ssltest – Ziel ist Note A.",
+        "fertig": "Das Zertifikat ist gueltig und die Verbindung nutzt TLS 1.2 oder 1.3.",
+    },
 }
 
-STATUS_COLORS = {
-    "PASS":    COLOR_PASS,
-    "WARNING": COLOR_WARNING,
-    "FAIL":    COLOR_FAIL,
-    "INFO":    COLOR_INFO,
-    "SKIPPED": COLOR_GRAY,
-}
-
-STATUS_LABELS = {
-    "PASS":    "OK",
-    "WARNING": "Warnung",
-    "FAIL":    "Mangelhaft",
-    "INFO":    "Info",
-    "SKIPPED": "Uebersprungen",
-}
-
-
-# =============================================================================
-# STYLES
-# =============================================================================
 
 def get_styles():
     base = getSampleStyleSheet()
-
-    styles = {
-        "title": ParagraphStyle(
-            "DSFTitle", parent=base["Title"],
-            fontSize=22, textColor=DSF_DARK,
-            spaceAfter=6, fontName="Helvetica-Bold",
-        ),
-        "subtitle": ParagraphStyle(
-            "DSFSubtitle", parent=base["Normal"],
-            fontSize=11, textColor=DSF_ACCENT,
-            spaceAfter=12, fontName="Helvetica",
-        ),
-        "h1": ParagraphStyle(
-            "DSFH1", parent=base["Heading1"],
-            fontSize=16, textColor=DSF_DARK,
-            spaceBefore=16, spaceAfter=8,
-            fontName="Helvetica-Bold",
-        ),
-        "h2": ParagraphStyle(
-            "DSFH2", parent=base["Heading2"],
-            fontSize=13, textColor=DSF_ACCENT,
-            spaceBefore=12, spaceAfter=6,
-            fontName="Helvetica-Bold",
-        ),
-        "body": ParagraphStyle(
-            "DSFBody", parent=base["Normal"],
-            fontSize=10, textColor=colors.black,
-            spaceAfter=6, fontName="Helvetica",
-            leading=14, alignment=TA_JUSTIFY,
-        ),
-        "body_small": ParagraphStyle(
-            "DSFBodySmall", parent=base["Normal"],
-            fontSize=8, textColor=COLOR_GRAY,
-            spaceAfter=4, fontName="Helvetica",
-            leading=11,
-        ),
-        "finding": ParagraphStyle(
-            "DSFFinding", parent=base["Normal"],
-            fontSize=9, textColor=colors.black,
-            spaceAfter=2, fontName="Helvetica",
-            leading=12, leftIndent=8,
-        ),
-        "cell": ParagraphStyle(
-            "DSFCell", parent=base["Normal"],
-            fontSize=9, textColor=colors.black,
-            fontName="Helvetica", leading=12,
-        ),
-        "cell_bold": ParagraphStyle(
-            "DSFCellBold", parent=base["Normal"],
-            fontSize=9, textColor=colors.black,
-            fontName="Helvetica-Bold", leading=12,
-        ),
-        "verdict": ParagraphStyle(
-            "DSFVerdict", parent=base["Normal"],
-            fontSize=14, textColor=DSF_DARK,
-            fontName="Helvetica-Bold", alignment=TA_CENTER,
-            spaceBefore=8, spaceAfter=8,
-        ),
-        "footer": ParagraphStyle(
-            "DSFFooter", parent=base["Normal"],
-            fontSize=7, textColor=COLOR_GRAY,
-            fontName="Helvetica",
-        ),
+    return {
+        "kicker": ParagraphStyle("kicker", parent=base["Normal"], fontName="Helvetica-Bold",
+                                 fontSize=9, textColor=MUTED, spaceAfter=2, leading=12),
+        "title": ParagraphStyle("title", parent=base["Title"], fontName="Helvetica-Bold",
+                                fontSize=26, textColor=INK, spaceAfter=4, leading=30, alignment=TA_LEFT),
+        "sub": ParagraphStyle("sub", parent=base["Normal"], fontName="Helvetica",
+                              fontSize=11, textColor=MUTED, spaceAfter=10, leading=15),
+        "h": ParagraphStyle("h", parent=base["Heading1"], fontName="Helvetica-Bold",
+                            fontSize=13, textColor=INK, spaceBefore=16, spaceAfter=8, leading=16),
+        "body": ParagraphStyle("body", parent=base["Normal"], fontName="Helvetica",
+                               fontSize=9.5, textColor=INK, leading=14, spaceAfter=5, alignment=TA_LEFT),
+        "small": ParagraphStyle("small", parent=base["Normal"], fontName="Helvetica",
+                                fontSize=8, textColor=MUTED, leading=11, spaceAfter=3),
+        "cell": ParagraphStyle("cell", parent=base["Normal"], fontName="Helvetica",
+                               fontSize=9, textColor=INK, leading=12),
+        "cellmuted": ParagraphStyle("cellmuted", parent=base["Normal"], fontName="Helvetica",
+                                    fontSize=9, textColor=MUTED, leading=12),
+        "checkname": ParagraphStyle("checkname", parent=base["Normal"], fontName="Helvetica-Bold",
+                                    fontSize=10.5, textColor=INK, leading=14, spaceBefore=8, spaceAfter=1),
     }
-    return styles
 
 
-# =============================================================================
-# PAGE TEMPLATE
-# =============================================================================
-
-class DSFPageTemplate:
-    """Header/Footer fuer jede Seite."""
-
-    def __init__(self, scan_id: str, scan_date: str):
+class _Page:
+    def __init__(self, scan_id, scan_date):
         self.scan_id = scan_id
         self.scan_date = scan_date
 
-    def __call__(self, canvas_obj, doc):
-        canvas_obj.saveState()
+    def __call__(self, c, doc):
+        c.saveState()
         w, h = A4
+        # dezente Kopfzeile ab Seite 2
+        if doc.page > 1:
+            c.setFont("Helvetica", 7.5)
+            c.setFillColor(MUTED)
+            c.drawString(20*mm, h - 12*mm, "DSGVO-Bericht")
+            c.drawRightString(w - 20*mm, h - 12*mm, f"{self.scan_id}")
+            c.setStrokeColor(HAIRLINE); c.setLineWidth(0.5)
+            c.line(20*mm, h - 14*mm, w - 20*mm, h - 14*mm)
+        # Fusszeile
+        c.setStrokeColor(HAIRLINE); c.setLineWidth(0.5)
+        c.line(20*mm, 14*mm, w - 20*mm, 14*mm)
+        c.setFont("Helvetica", 7.5); c.setFillColor(MUTED)
+        c.drawString(20*mm, 10*mm, "DSF Consulting  ·  vertraulich")
+        c.drawRightString(w - 20*mm, 10*mm, f"Seite {doc.page}")
+        c.restoreState()
 
-        # Header-Linie
-        canvas_obj.setStrokeColor(DSF_ACCENT)
-        canvas_obj.setLineWidth(2)
-        canvas_obj.line(20*mm, h - 15*mm, w - 20*mm, h - 15*mm)
-
-        # Header-Text
-        canvas_obj.setFont("Helvetica-Bold", 8)
-        canvas_obj.setFillColor(DSF_ACCENT)
-        canvas_obj.drawString(20*mm, h - 13*mm, "DSF DSGVO COMPLIANCE REPORT")
-
-        canvas_obj.setFont("Helvetica", 7)
-        canvas_obj.setFillColor(COLOR_GRAY)
-        canvas_obj.drawRightString(w - 20*mm, h - 13*mm, f"{self.scan_id} | {self.scan_date}")
-
-        # Footer
-        canvas_obj.setStrokeColor(DSF_LIGHT)
-        canvas_obj.setLineWidth(0.5)
-        canvas_obj.line(20*mm, 15*mm, w - 20*mm, 15*mm)
-
-        canvas_obj.setFont("Helvetica", 7)
-        canvas_obj.setFillColor(COLOR_GRAY)
-        canvas_obj.drawString(20*mm, 10*mm, "(c) DSF Consulting | AF13-NEXUS | Vertraulich")
-        canvas_obj.drawRightString(w - 20*mm, 10*mm, f"Seite {doc.page}")
-
-        canvas_obj.restoreState()
-
-
-# =============================================================================
-# REPORT BUILDER
-# =============================================================================
 
 class DSGVOReportPDF:
-
     def __init__(self, scan_data: dict):
         self.data = scan_data
-        self.styles = get_styles()
-        self.elements = []
+        self.s = get_styles()
+        self.el = []
 
-    def build(self, filepath: str):
-        """PDF generieren und speichern."""
-        doc = SimpleDocTemplate(
-            filepath,
-            pagesize=A4,
-            topMargin=22*mm,
-            bottomMargin=22*mm,
-            leftMargin=20*mm,
-            rightMargin=20*mm,
-        )
+    def build(self, filepath: str, full: bool = False):
+        doc = SimpleDocTemplate(filepath, pagesize=A4,
+                                topMargin=20*mm, bottomMargin=20*mm,
+                                leftMargin=20*mm, rightMargin=20*mm)
+        tmpl = _Page(self.data.get("scan_id", ""), self.data.get("scan_date", ""))
+        self._cover()
+        self._summary()
+        self._details()
+        self._third_parties()
+        self._recommendations()
+        if full:
+            # Bezahlte Vollversion: konkrete Schritt-fuer-Schritt-Anleitung
+            self._remediation_guide()
+            self._upsell()
+        else:
+            # Kostenlose Version: Verweis auf Anleitung / Umsetzung
+            self._call_to_action()
+        self._notes()
+        doc.build(self.el, onFirstPage=tmpl, onLaterPages=tmpl)
 
-        template = DSFPageTemplate(
-            self.data.get("scan_id", ""),
-            self.data.get("scan_date", ""),
-        )
+    # ── Deckblatt: hell, klar, lesbar ──────────────────────────────────────
+    def _cover(self):
+        s = self.s
+        d = self.data
+        risk = d.get("risk_level", "UNBEKANNT")
+        score = d.get("risk_score", 0)
+        rc = RISK_COLOR.get(risk, MUTED)
 
-        self._build_cover()
-        self._build_executive_summary()
-        self._build_check_details()
-        self._build_third_parties()
-        self._build_cookies()
-        self._build_recommendations()
-        self._build_appendix()
+        self.el.append(Spacer(1, 24*mm))
+        self.el.append(Paragraph("DSGVO-PRUEFUNG", s["kicker"]))
+        self.el.append(Paragraph("Ihr Datenschutz-Bericht", s["title"]))
+        self.el.append(Paragraph(d.get("final_url", d.get("url", "")), s["sub"]))
+        self.el.append(HRFlowable(width="100%", thickness=0.7, color=HAIRLINE, spaceAfter=10*mm))
 
-        doc.build(self.elements, onFirstPage=template, onLaterPages=template)
+        # Risiko-Zeile: farbiger Balken links, Text dunkel auf hell
+        risk_label = Paragraph(f'<font color="{rc.hexval()}"><b>RISIKO&nbsp;&nbsp;{risk}</b></font>',
+                               ParagraphStyle("r", parent=s["body"], fontSize=15, leading=18))
+        score_txt = Paragraph(f'<font color="{MUTED.hexval()}">Bewertung {score}/100</font>',
+                              ParagraphStyle("rs", parent=s["body"], fontSize=11, leading=18))
+        verdict = d.get("summary", {}).get("verdict", "")
+        risk_box = Table([[risk_label, score_txt], [Paragraph(verdict, s["body"]), ""]],
+                         colWidths=[110*mm, 50*mm])
+        risk_box.setStyle(TableStyle([
+            ("SPAN", (0, 1), (1, 1)),
+            ("BACKGROUND", (0, 0), (-1, -1), SOFT_BG),
+            ("LINEBEFORE", (0, 0), (0, -1), 3, rc),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+            ("LEFTPADDING", (0, 0), (-1, -1), 14),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+        ]))
+        self.el.append(risk_box)
+        self.el.append(Spacer(1, 14*mm))
 
-    # -------------------------------------------------------------------------
-
-    def _build_cover(self):
-        s = self.styles
-        summary = self.data.get("summary", {})
-        risk_level = self.data.get("risk_level", "UNBEKANNT")
-        risk_score = self.data.get("risk_score", 0)
-
-        self.elements.append(Spacer(1, 30*mm))
-        self.elements.append(Paragraph("DSGVO COMPLIANCE", s["title"]))
-        self.elements.append(Paragraph("ANALYSE-REPORT", s["title"]))
-        self.elements.append(Spacer(1, 8*mm))
-
-        self.elements.append(HRFlowable(
-            width="100%", thickness=2, color=DSF_ACCENT,
-            spaceAfter=8*mm
-        ))
-
-        # Meta-Info Tabelle
-        meta_data = [
-            ["Website:", self.data.get("final_url", self.data.get("url", ""))],
-            ["Scan-Datum:", self.data.get("scan_date", "")],
-            ["Scan-ID:", self.data.get("scan_id", "")],
-            ["Engine:", self.data.get("meta", {}).get("engine", "")],
+        # Meta unten, dezent
+        meta = [
+            [Paragraph("Geprueft am", s["small"]), Paragraph(d.get("scan_date", ""), s["cell"])],
+            [Paragraph("Bericht-Nr.", s["small"]), Paragraph(d.get("scan_id", ""), s["cell"])],
         ]
-        meta_table = Table(meta_data, colWidths=[35*mm, 120*mm])
-        meta_table.setStyle(TableStyle([
-            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
-            ("FONTNAME", (1, 0), (1, -1), "Helvetica"),
-            ("FONTSIZE", (0, 0), (-1, -1), 10),
-            ("TEXTCOLOR", (0, 0), (0, -1), DSF_ACCENT),
-            ("TEXTCOLOR", (1, 0), (1, -1), colors.black),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
+        mt = Table(meta, colWidths=[30*mm, 130*mm])
+        mt.setStyle(TableStyle([
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ]))
-        self.elements.append(meta_table)
-        self.elements.append(Spacer(1, 12*mm))
+        self.el.append(mt)
+        self.el.append(PageBreak())
 
-        # Risiko-Ampel
-        risk_color = RISK_COLORS.get(risk_level, COLOR_GRAY)
+    # ── Ueberblick ─────────────────────────────────────────────────────────
+    def _summary(self):
+        s = self.s
+        sm = self.data.get("summary", {})
+        self.el.append(Paragraph("Ueberblick", s["h"]))
 
-        ampel_data = [[
-            Paragraph(f'<font color="white" size="18"><b>RISIKO: {risk_level}</b></font>', s["verdict"]),
-        ], [
-            Paragraph(f'<font color="white" size="12">Score: {risk_score}/100</font>', s["verdict"]),
-        ]]
-
-        ampel_table = Table(ampel_data, colWidths=[160*mm])
-        ampel_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), risk_color),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("TOPPADDING", (0, 0), (-1, -1), 8),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ("ROUNDEDCORNERS", [4, 4, 4, 4]),
-        ]))
-        self.elements.append(ampel_table)
-
-        self.elements.append(Spacer(1, 8*mm))
-        verdict = summary.get("verdict", "")
-        self.elements.append(Paragraph(verdict, s["body"]))
-
-        self.elements.append(PageBreak())
-
-    # -------------------------------------------------------------------------
-
-    def _build_executive_summary(self):
-        s = self.styles
-        summary = self.data.get("summary", {})
-
-        self.elements.append(Paragraph("1. ZUSAMMENFASSUNG", s["h1"]))
-        self.elements.append(HRFlowable(width="100%", thickness=1, color=DSF_LIGHT, spaceAfter=4*mm))
-
-        # Ampel-Uebersicht
-        checks_pass = summary.get("checks_pass", 0)
-        checks_warn = summary.get("checks_warning", 0)
-        checks_fail = summary.get("checks_fail", 0)
-        checks_total = summary.get("checks_total", 0)
-
-        overview_data = [
-            [
-                Paragraph("<b>Checks gesamt</b>", s["cell_bold"]),
-                Paragraph("<b>Bestanden</b>", s["cell_bold"]),
-                Paragraph("<b>Warnungen</b>", s["cell_bold"]),
-                Paragraph("<b>Mangelhaft</b>", s["cell_bold"]),
-                Paragraph("<b>Drittanbieter</b>", s["cell_bold"]),
-                Paragraph("<b>Cookies vor Consent</b>", s["cell_bold"]),
-            ],
-            [
-                Paragraph(str(checks_total), s["cell"]),
-                Paragraph(f'<font color="{COLOR_PASS.hexval()}">{checks_pass}</font>', s["cell"]),
-                Paragraph(f'<font color="{COLOR_WARNING.hexval()}">{checks_warn}</font>', s["cell"]),
-                Paragraph(f'<font color="{COLOR_FAIL.hexval()}">{checks_fail}</font>', s["cell"]),
-                Paragraph(str(summary.get("third_party_count", 0)), s["cell"]),
-                Paragraph(str(summary.get("cookies_before_consent", 0)), s["cell"]),
-            ],
+        stats = [
+            ("Geprueft", sm.get("checks_total", 0), INK),
+            ("In Ordnung", sm.get("checks_pass", 0), C_OK),
+            ("Hinweise", sm.get("checks_warning", 0), C_WARN),
+            ("Handlungsbedarf", sm.get("checks_fail", 0), C_FAIL),
+            ("Drittanbieter", sm.get("third_party_count", 0), INK),
         ]
-
-        overview_table = Table(overview_data, colWidths=[27*mm, 25*mm, 25*mm, 27*mm, 28*mm, 38*mm])
-        overview_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), DSF_BLUE),
-            ("TEXTCOLOR", (0, 0), (-1, 0), DSF_WHITE),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("GRID", (0, 0), (-1, -1), 0.5, DSF_LIGHT),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("TOPPADDING", (0, 0), (-1, -1), 6),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        row_num, row_lbl = [], []
+        for lbl, val, col in stats:
+            row_num.append(Paragraph(f'<font color="{col.hexval()}"><b>{val}</b></font>',
+                                     ParagraphStyle("n", parent=s["body"], fontSize=20, leading=22)))
+            row_lbl.append(Paragraph(f'<font color="{MUTED.hexval()}">{lbl}</font>',
+                                     ParagraphStyle("l", parent=s["small"], fontSize=8)))
+        st = Table([row_num, row_lbl], colWidths=[34*mm]*5)
+        st.setStyle(TableStyle([
+            ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, 0), 0),
+            ("BOTTOMPADDING", (0, 1), (-1, 1), 8),
         ]))
-        self.elements.append(overview_table)
-        self.elements.append(Spacer(1, 8*mm))
+        self.el.append(st)
+        self.el.append(HRFlowable(width="100%", thickness=0.7, color=HAIRLINE, spaceBefore=4, spaceAfter=8))
 
-        # Checks-Uebersicht als Ampel-Tabelle
-        self.elements.append(Paragraph("Ergebnis je Pruefbereich:", s["h2"]))
-
-        checks = self.data.get("checks", [])
-        if checks:
-            check_overview = [
-                [
-                    Paragraph("<b>Bereich</b>", s["cell_bold"]),
-                    Paragraph("<b>Status</b>", s["cell_bold"]),
-                    Paragraph("<b>Bewertung</b>", s["cell_bold"]),
-                ]
-            ]
-
-            for c in checks:
-                status = c.get("status", "SKIPPED")
-                sc = STATUS_COLORS.get(status, COLOR_GRAY)
-                label = STATUS_LABELS.get(status, status)
-
-                check_overview.append([
-                    Paragraph(c.get("title", ""), s["cell"]),
-                    Paragraph(f'<font color="{sc.hexval()}"><b>{label}</b></font>', s["cell"]),
-                    Paragraph(c.get("detail", "")[:100], s["cell"]),
-                ])
-
-            col_widths = [45*mm, 25*mm, 100*mm]
-            check_table = Table(check_overview, colWidths=col_widths)
-            check_table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), DSF_BLUE),
-                ("TEXTCOLOR", (0, 0), (-1, 0), DSF_WHITE),
-                ("GRID", (0, 0), (-1, -1), 0.5, DSF_LIGHT),
-                ("FONTSIZE", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        # Kurzliste je Pruefbereich
+        for c in self.data.get("checks", []):
+            col = STATUS_COLOR.get(c.get("status", "SKIPPED"), MUTED)
+            lbl = STATUS_LABEL.get(c.get("status", "SKIPPED"), "-")
+            name = Paragraph(c.get("title", ""), s["cell"])
+            status = Paragraph(f'<font color="{col.hexval()}"><b>{lbl}</b></font>', s["cell"])
+            row = Table([[status, name]], colWidths=[34*mm, 126*mm])
+            row.setStyle(TableStyle([
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                # Alternating row colors
-                *[("BACKGROUND", (0, i), (-1, i), colors.HexColor("#f5f5f5"))
-                  for i in range(2, len(check_overview), 2)],
+                ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LINEBELOW", (0, 0), (-1, -1), 0.4, HAIRLINE),
             ]))
-            self.elements.append(check_table)
+            self.el.append(row)
 
-        self.elements.append(PageBreak())
-
-    # -------------------------------------------------------------------------
-
-    def _build_check_details(self):
-        s = self.styles
-        checks = self.data.get("checks", [])
-
-        self.elements.append(Paragraph("2. DETAILLIERTE ERGEBNISSE", s["h1"]))
-        self.elements.append(HRFlowable(width="100%", thickness=1, color=DSF_LIGHT, spaceAfter=4*mm))
-
-        for c in checks:
-            status = c.get("status", "SKIPPED")
-            sc = STATUS_COLORS.get(status, COLOR_GRAY)
-            label = STATUS_LABELS.get(status, status)
-
-            block = []
-
-            # Titel mit Status-Farbe
-            title_html = (
-                f'<font color="{sc.hexval()}"><b>[{label}]</b></font> '
-                f'<b>{c.get("title", "")}</b>'
-            )
-            block.append(Paragraph(title_html, s["h2"]))
-
-            # Detail
-            block.append(Paragraph(c.get("detail", ""), s["body"]))
-
-            # Rechtsgrundlage
-            if c.get("rechtsgrundlage"):
-                block.append(Paragraph(
-                    f'<i>Rechtsgrundlage: {c["rechtsgrundlage"]}</i>',
-                    s["body_small"]
-                ))
-
-            # Sub-Findings
+    # ── Details ────────────────────────────────────────────────────────────
+    def _details(self):
+        s = self.s
+        self.el.append(Paragraph("Ergebnisse im Detail", s["h"]))
+        for c in self.data.get("checks", []):
+            col = STATUS_COLOR.get(c.get("status", "SKIPPED"), MUTED)
+            lbl = STATUS_LABEL.get(c.get("status", "SKIPPED"), "-")
+            self.el.append(Paragraph(
+                f'<font color="{col.hexval()}"><b>{lbl}</b></font>&nbsp;&nbsp;{c.get("title","")}',
+                s["checkname"]))
+            self.el.append(Paragraph(c.get("detail", ""), s["body"]))
             for sf in c.get("sub_findings", []):
-                block.append(Paragraph(f"- {sf}", s["finding"]))
-
-            # Empfehlung
+                self.el.append(Paragraph(f'<font color="{MUTED.hexval()}">–</font>&nbsp;{sf}', s["small"]))
             if c.get("empfehlung"):
-                block.append(Paragraph(
-                    f'<font color="{DSF_ACCENT.hexval()}"><b>Empfehlung:</b></font> {c["empfehlung"]}',
-                    s["body"]
-                ))
+                self.el.append(Paragraph(
+                    f'<font color="{MUTED.hexval()}"><b>Empfehlung:</b> {c["empfehlung"]}</font>', s["small"]))
+            if c.get("rechtsgrundlage"):
+                self.el.append(Paragraph(
+                    f'<font color="{MUTED.hexval()}">{c["rechtsgrundlage"]}</font>', s["small"]))
+            self.el.append(Spacer(1, 2*mm))
 
-            block.append(Spacer(1, 3*mm))
-
-            # Keep together wenn moeglich
-            self.elements.append(KeepTogether(block))
-
-    # -------------------------------------------------------------------------
-
-    def _build_third_parties(self):
-        s = self.styles
-        third_parties = self.data.get("third_parties", [])
-
-        if not third_parties:
+    # ── Drittanbieter ──────────────────────────────────────────────────────
+    def _third_parties(self):
+        s = self.s
+        tp = [t for t in self.data.get("third_parties", []) if t.get("category") != "consent"]
+        if not tp:
             return
-
-        self.elements.append(PageBreak())
-        self.elements.append(Paragraph("3. ERKANNTE DRITTANBIETER-DIENSTE", s["h1"]))
-        self.elements.append(HRFlowable(width="100%", thickness=1, color=DSF_LIGHT, spaceAfter=4*mm))
-
-        tp_data = [
-            [
-                Paragraph("<b>Dienst</b>", s["cell_bold"]),
-                Paragraph("<b>Kategorie</b>", s["cell_bold"]),
-                Paragraph("<b>Land</b>", s["cell_bold"]),
-                Paragraph("<b>Risiko</b>", s["cell_bold"]),
-            ]
-        ]
-
-        risk_colors_map = {
-            "hoch": COLOR_FAIL,
-            "mittel": COLOR_WARNING,
-            "niedrig": COLOR_PASS,
-            "keine": COLOR_INFO,
-        }
-
-        for tp in third_parties:
-            rc = risk_colors_map.get(tp.get("risk", ""), COLOR_GRAY)
-            tp_data.append([
-                Paragraph(tp.get("name", ""), s["cell"]),
-                Paragraph(tp.get("category", ""), s["cell"]),
-                Paragraph(tp.get("country", ""), s["cell"]),
-                Paragraph(f'<font color="{rc.hexval()}"><b>{tp.get("risk", "")}</b></font>', s["cell"]),
+        self.el.append(Paragraph("Erkannte Drittanbieter", s["h"]))
+        data = [[Paragraph("Dienst", s["cellmuted"]), Paragraph("Zweck", s["cellmuted"]),
+                 Paragraph("Land", s["cellmuted"]), Paragraph("Risiko", s["cellmuted"])]]
+        rcmap = {"hoch": C_FAIL, "mittel": C_WARN, "niedrig": C_OK}
+        for t in tp:
+            rc = rcmap.get(t.get("risk", ""), MUTED)
+            data.append([
+                Paragraph(t.get("name", ""), s["cell"]),
+                Paragraph(t.get("category", ""), s["cell"]),
+                Paragraph(t.get("country", ""), s["cell"]),
+                Paragraph(f'<font color="{rc.hexval()}">{t.get("risk","")}</font>', s["cell"]),
             ])
-
-        tp_table = Table(tp_data, colWidths=[50*mm, 35*mm, 20*mm, 25*mm])
-        tp_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), DSF_BLUE),
-            ("TEXTCOLOR", (0, 0), (-1, 0), DSF_WHITE),
-            ("GRID", (0, 0), (-1, -1), 0.5, DSF_LIGHT),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            *[("BACKGROUND", (0, i), (-1, i), colors.HexColor("#f5f5f5"))
-              for i in range(2, len(tp_data), 2)],
+        tbl = Table(data, colWidths=[55*mm, 45*mm, 25*mm, 35*mm])
+        tbl.setStyle(TableStyle([
+            ("LINEBELOW", (0, 0), (-1, 0), 0.6, INK),
+            ("LINEBELOW", (0, 1), (-1, -1), 0.4, HAIRLINE),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ]))
-        self.elements.append(tp_table)
+        self.el.append(tbl)
 
-    # -------------------------------------------------------------------------
-
-    def _build_cookies(self):
-        s = self.styles
-        cookies = self.data.get("cookies_before_consent", [])
-
-        if not cookies:
+    # ── Empfehlungen ───────────────────────────────────────────────────────
+    def _recommendations(self):
+        s = self.s
+        recs = self.data.get("summary", {}).get("top_recommendations", [])
+        if not recs:
             return
-
-        self.elements.append(Spacer(1, 8*mm))
-        self.elements.append(Paragraph("4. COOKIES VOR EINWILLIGUNG", s["h1"]))
-        self.elements.append(HRFlowable(width="100%", thickness=1, color=DSF_LIGHT, spaceAfter=4*mm))
-
-        self.elements.append(Paragraph(
-            f"Folgende {len(cookies)} nicht-essentiellen Cookies wurden gesetzt, "
-            f"BEVOR eine Einwilligung erteilt wurde. "
-            f"Dies ist ein Verstoss gegen Art. 6 Abs. 1 lit. a DSGVO und TDDDG Paragraph 25.",
-            s["body"]
-        ))
-
-        cookie_data = [
-            [
-                Paragraph("<b>Cookie-Name</b>", s["cell_bold"]),
-                Paragraph("<b>Domain</b>", s["cell_bold"]),
-                Paragraph("<b>Secure</b>", s["cell_bold"]),
-                Paragraph("<b>HttpOnly</b>", s["cell_bold"]),
-            ]
-        ]
-
-        for c in cookies[:20]:  # Max 20 im Report
-            cookie_data.append([
-                Paragraph(c.get("name", ""), s["cell"]),
-                Paragraph(c.get("domain", ""), s["cell"]),
-                Paragraph("Ja" if c.get("secure") else "Nein", s["cell"]),
-                Paragraph("Ja" if c.get("httpOnly") else "Nein", s["cell"]),
+        self.el.append(Paragraph("Was zu tun ist", s["h"]))
+        pc = {"HOCH": C_FAIL, "MITTEL": C_WARN, "NIEDRIG": C_OK}
+        data = [[Paragraph("Prioritaet", s["cellmuted"]), Paragraph("Bereich", s["cellmuted"]),
+                 Paragraph("Massnahme", s["cellmuted"])]]
+        for r in recs:
+            c = pc.get(r.get("prioritaet", ""), MUTED)
+            data.append([
+                Paragraph(f'<font color="{c.hexval()}">{r.get("prioritaet","")}</font>', s["cell"]),
+                Paragraph(r.get("bereich", ""), s["cell"]),
+                Paragraph(r.get("massnahme", ""), s["cell"]),
             ])
-
-        c_table = Table(cookie_data, colWidths=[50*mm, 50*mm, 20*mm, 20*mm])
-        c_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), DSF_BLUE),
-            ("TEXTCOLOR", (0, 0), (-1, 0), DSF_WHITE),
-            ("GRID", (0, 0), (-1, -1), 0.5, DSF_LIGHT),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
-            ("TOPPADDING", (0, 0), (-1, -1), 3),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-        ]))
-        self.elements.append(c_table)
-
-    # -------------------------------------------------------------------------
-
-    def _build_recommendations(self):
-        s = self.styles
-        summary = self.data.get("summary", {})
-        recommendations = summary.get("top_recommendations", [])
-
-        if not recommendations:
-            return
-
-        self.elements.append(PageBreak())
-        self.elements.append(Paragraph("5. HANDLUNGSEMPFEHLUNGEN", s["h1"]))
-        self.elements.append(HRFlowable(width="100%", thickness=1, color=DSF_LIGHT, spaceAfter=4*mm))
-
-        self.elements.append(Paragraph(
-            "Priorisierte Massnahmen zur Verbesserung der DSGVO-Compliance, "
-            "sortiert nach Dringlichkeit:",
-            s["body"]
-        ))
-
-        prio_colors = {
-            "HOCH": COLOR_FAIL,
-            "MITTEL": COLOR_WARNING,
-            "NIEDRIG": COLOR_PASS,
-        }
-
-        rec_data = [
-            [
-                Paragraph("<b>Nr.</b>", s["cell_bold"]),
-                Paragraph("<b>Prioritaet</b>", s["cell_bold"]),
-                Paragraph("<b>Bereich</b>", s["cell_bold"]),
-                Paragraph("<b>Massnahme</b>", s["cell_bold"]),
-            ]
-        ]
-
-        for i, rec in enumerate(recommendations, 1):
-            pc = prio_colors.get(rec.get("prioritaet", ""), COLOR_GRAY)
-            rec_data.append([
-                Paragraph(str(i), s["cell"]),
-                Paragraph(
-                    f'<font color="{pc.hexval()}"><b>{rec.get("prioritaet", "")}</b></font>',
-                    s["cell"]
-                ),
-                Paragraph(rec.get("bereich", ""), s["cell"]),
-                Paragraph(rec.get("massnahme", ""), s["cell"]),
-            ])
-
-        rec_table = Table(rec_data, colWidths=[12*mm, 25*mm, 35*mm, 98*mm])
-        rec_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), DSF_BLUE),
-            ("TEXTCOLOR", (0, 0), (-1, 0), DSF_WHITE),
-            ("GRID", (0, 0), (-1, -1), 0.5, DSF_LIGHT),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        tbl = Table(data, colWidths=[24*mm, 38*mm, 98*mm])
+        tbl.setStyle(TableStyle([
+            ("LINEBELOW", (0, 0), (-1, 0), 0.6, INK),
+            ("LINEBELOW", (0, 1), (-1, -1), 0.4, HAIRLINE),
+            ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            *[("BACKGROUND", (0, i), (-1, i), colors.HexColor("#f5f5f5"))
-              for i in range(2, len(rec_data), 2)],
         ]))
-        self.elements.append(rec_table)
+        self.el.append(tbl)
+        self.el.append(Spacer(1, 4*mm))
+        self.el.append(Paragraph(
+            "Diese Punkte sind kein Grund zur Sorge. Wie Sie sie beheben, lesen Sie auf der naechsten Seite.",
+            s["body"]))
 
-    # -------------------------------------------------------------------------
+    # ── Handlungsaufforderung mit zwei E-Mail-Optionen ─────────────────────
+    def _call_to_action(self):
+        s = self.s
+        self.el.append(PageBreak())
+        self.el.append(Paragraph("So beheben Sie das", s["h"]))
+        self.el.append(Paragraph(
+            "Ihr Ergebnis zeigt Handlungsbedarf - die meisten Punkte sind schnell behoben. "
+            "Solche Stellen werden in Deutschland regelmaessig abgemahnt, und eine einzige "
+            "Abmahnung kostet oft mehr als ein ganzes Jahr Vorsorge. Sie haben zwei Wege:",
+            s["body"]))
+        self.el.append(Spacer(1, 5*mm))
 
-    def _build_appendix(self):
-        s = self.styles
+        subj1 = quote("DSGVO-Bericht: Anleitung anfordern (29 EUR)")
+        subj2 = quote("DSGVO-Bericht: bitte fuer mich umsetzen")
+        link1 = f"mailto:{CONTACT}?subject={subj1}"
+        link2 = f"mailto:{CONTACT}?subject={subj2}"
 
-        self.elements.append(Spacer(1, 12*mm))
-        self.elements.append(HRFlowable(width="100%", thickness=1, color=DSF_LIGHT, spaceAfter=4*mm))
+        opt_title = ParagraphStyle("ot", parent=s["body"], fontName="Helvetica-Bold", fontSize=11, spaceAfter=2)
+        opt_body = ParagraphStyle("ob", parent=s["body"], fontSize=9.5)
+        link_st = ParagraphStyle("lk", parent=s["body"], fontName="Helvetica-Bold", fontSize=9.5, textColor=INK)
 
-        self.elements.append(Paragraph("HINWEISE", s["h2"]))
+        card1 = [
+            Paragraph("Selbst umsetzen", opt_title),
+            Paragraph("Der vollstaendige Bericht erklaert jeden Punkt Schritt fuer Schritt, in klarem Deutsch. "
+                      "Einmalig 29 EUR.", opt_body),
+            Spacer(1, 2*mm),
+            Paragraph(f'<a href="{link1}"><u>Anleitung per E-Mail anfordern &#8594;</u></a>', link_st),
+        ]
+        card2 = [
+            Paragraph("Von mir umsetzen lassen", opt_title),
+            Paragraph("Sie schicken mir den Bericht, ich bringe Ihre Website in Ordnung. "
+                      "Sie kuemmern sich weiter um Ihr Geschaeft.", opt_body),
+            Spacer(1, 2*mm),
+            Paragraph(f'<a href="{link2}"><u>Umsetzung anfragen &#8594;</u></a>', link_st),
+        ]
+        cards = Table([[card1, card2]], colWidths=[80*mm, 80*mm])
+        cards.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("BACKGROUND", (0, 0), (-1, -1), SOFT_BG),
+            ("LINEBEFORE", (0, 0), (0, -1), 2.5, INK),
+            ("LINEBEFORE", (1, 0), (1, -1), 2.5, MUTED),
+            ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+            ("TOPPADDING", (0, 0), (-1, -1), 12), ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+        ]))
+        self.el.append(cards)
+        self.el.append(Spacer(1, 6*mm))
+        self.el.append(Paragraph(
+            f'Noch Fragen? Schreiben Sie mir einfach: <b>{CONTACT}</b>', s["body"]))
+        self.el.append(Spacer(1, 2*mm))
+        self.el.append(Paragraph(
+            '<font color="%s"><i>Ein sauberer Auftritt ist kein Luxus. Er haelt Ihnen den Ruecken frei.</i></font>' % MUTED.hexval(),
+            s["body"]))
 
-        disclaimer_text = (
-            "Dieser Report wurde automatisch durch die DSF DSGVO Compliance Engine erstellt. "
-            "Er stellt keine Rechtsberatung dar. Die Analyse basiert auf einer technischen Pruefung "
-            "der Website zum angegebenen Zeitpunkt. Dynamische Inhalte, Login-geschuetzte Bereiche "
-            "und serverseitige Konfigurationen werden nicht vollstaendig erfasst. "
-            "Fuer eine rechtssichere Bewertung wird die Hinzuziehung eines Datenschutzbeauftragten "
-            "oder Rechtsanwalts empfohlen."
-        )
-        self.elements.append(Paragraph(disclaimer_text, s["body_small"]))
+    # ── Bezahlte Vollversion: Schritt-fuer-Schritt-Anleitung ───────────────
+    def _remediation_guide(self):
+        s = self.s
+        self.el.append(PageBreak())
+        self.el.append(Paragraph("Ihre Anleitung, Schritt fuer Schritt", s["h"]))
+        self.el.append(Paragraph(
+            "Auf den folgenden Seiten steht fuer jeden offenen Punkt genau, was zu tun ist. "
+            "In klarem Deutsch, in der richtigen Reihenfolge. Arbeiten Sie die Punkte von oben "
+            "nach unten ab. Ganz unten steht jeweils, woran Sie erkennen, dass es erledigt ist.",
+            s["body"]))
+        self.el.append(Spacer(1, 4*mm))
 
-        self.elements.append(Spacer(1, 4*mm))
+        step_num = ParagraphStyle("sn", parent=s["body"], fontName="Helvetica-Bold",
+                                  fontSize=9.5, textColor=WHITE, alignment=1, leading=13)
+        step_txt = ParagraphStyle("stx", parent=s["body"], fontSize=9.5, leading=14, spaceAfter=0)
+        tip_txt = ParagraphStyle("tip", parent=s["small"], fontSize=8.5, leading=12, textColor=MUTED)
+        done_txt = ParagraphStyle("done", parent=s["small"], fontSize=8.5, leading=12, textColor=C_OK)
 
-        tech_text = (
-            f"Engine: {self.data.get('meta', {}).get('engine', 'DSF-PRO-CORE')} | "
-            f"Renderer: {self.data.get('meta', {}).get('renderer', 'n/a')} | "
-            f"JS-Rendering: {'Ja' if self.data.get('meta', {}).get('js_rendering') else 'Nein'}"
-        )
-        self.elements.append(Paragraph(tech_text, s["body_small"]))
+        # nur offene Punkte, in sinnvoller Reihenfolge (Prioritaet nach Status)
+        order = {"FAIL": 0, "WARNING": 1}
+        checks = [c for c in self.data.get("checks", [])
+                  if c.get("status") in order and c.get("key") in REMEDIATION]
+        checks.sort(key=lambda c: order.get(c.get("status"), 9))
 
-        self.elements.append(Spacer(1, 8*mm))
-        self.elements.append(Paragraph(
-            "(c) 2026 DSF Consulting | AF13-NEXUS | Alle Rechte vorbehalten.",
-            s["body_small"]
-        ))
+        if not checks:
+            self.el.append(Paragraph(
+                "Erfreulich: Es gibt keine offenen Punkte. Ihre Website ist in den geprueften "
+                "Bereichen sauber aufgestellt. Bewahren Sie diesen Bericht als Nachweis auf.",
+                s["body"]))
+            return
+
+        n = 0
+        for c in checks:
+            n += 1
+            r = REMEDIATION[c["key"]]
+            col = STATUS_COLOR.get(c.get("status", "SKIPPED"), MUTED)
+            lbl = STATUS_LABEL.get(c.get("status", "SKIPPED"), "-")
+
+            # Kopf: Nummer + Titel + Status
+            head = Paragraph(
+                f'<font color="{INK.hexval()}"><b>{n}.&nbsp;&nbsp;{r["titel"]}</b></font>'
+                f'&nbsp;&nbsp;<font color="{col.hexval()}" size="8">({lbl})</font>',
+                ParagraphStyle("gh", parent=s["body"], fontSize=12, leading=16,
+                               spaceBefore=8, spaceAfter=4))
+            self.el.append(head)
+
+            # nummerierte Schritte als Tabelle (Zahl-Chip + Text)
+            rows = []
+            for i, schritt in enumerate(r["schritte"], 1):
+                chip = Table([[Paragraph(str(i), step_num)]], colWidths=[6*mm], rowHeights=[6*mm])
+                chip.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, -1), INK),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]))
+                rows.append([chip, Paragraph(schritt, step_txt)])
+            steptbl = Table(rows, colWidths=[9*mm, 151*mm])
+            steptbl.setStyle(TableStyle([
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LEFTPADDING", (0, 0), (0, -1), 0),
+            ]))
+            self.el.append(steptbl)
+
+            # Tipp + Fertig-Kontrolle in einem ruhigen Kasten
+            info = [
+                [Paragraph(f'<b>Tipp:</b>&nbsp; {r["tipp"]}', tip_txt)],
+                [Paragraph(f'<b>Fertig, wenn:</b>&nbsp; {r["fertig"]}', done_txt)],
+            ]
+            box = Table(info, colWidths=[160*mm])
+            box.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), SOFT_BG),
+                ("LINEBEFORE", (0, 0), (0, -1), 2, HAIRLINE),
+                ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]))
+            self.el.append(Spacer(1, 2*mm))
+            self.el.append(box)
+            self.el.append(HRFlowable(width="100%", thickness=0.5, color=HAIRLINE,
+                                      spaceBefore=8, spaceAfter=2))
+
+    # ── Bezahlte Vollversion: dezenter Hinweis auf Umsetzung ───────────────
+    def _upsell(self):
+        s = self.s
+        self.el.append(Spacer(1, 6*mm))
+        subj = quote("DSGVO-Bericht: bitte fuer mich umsetzen")
+        link = f"mailto:{CONTACT}?subject={subj}"
+
+        title = ParagraphStyle("ut", parent=s["body"], fontName="Helvetica-Bold", fontSize=11, spaceAfter=3)
+        body = ParagraphStyle("ubd", parent=s["body"], fontSize=9.5)
+        link_st = ParagraphStyle("ulk", parent=s["body"], fontName="Helvetica-Bold", fontSize=9.5, textColor=INK)
+
+        block = [
+            Paragraph("Keine Zeit oder Lust auf das Technische?", title),
+            Paragraph("Sie muessen das nicht selbst machen. Schicken Sie mir diesen Bericht, "
+                      "und ich setze die Punkte fuer Sie um. Sie kuemmern sich weiter um Ihr Geschaeft.",
+                      body),
+            Spacer(1, 2*mm),
+            Paragraph(f'<a href="{link}"><u>Umsetzung anfragen &#8594;</u></a>', link_st),
+        ]
+        card = Table([[block]], colWidths=[160*mm])
+        card.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("BACKGROUND", (0, 0), (-1, -1), SOFT_BG),
+            ("LINEBEFORE", (0, 0), (0, -1), 2.5, INK),
+            ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+            ("TOPPADDING", (0, 0), (-1, -1), 12), ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+        ]))
+        self.el.append(card)
+        self.el.append(Spacer(1, 5*mm))
+        self.el.append(Paragraph(f'Noch Fragen? Schreiben Sie mir einfach: <b>{CONTACT}</b>', s["body"]))
+
+    def _notes(self):
+        s = self.s
+        self.el.append(Spacer(1, 10*mm))
+        self.el.append(HRFlowable(width="100%", thickness=0.5, color=HAIRLINE, spaceAfter=4))
+        self.el.append(Paragraph(
+            "Dieser Bericht wurde automatisch vom DSGVO-Checker (DSF Consulting) erstellt und stellt keine "
+            "Rechtsberatung dar. Die Analyse ist eine technische Momentaufnahme der Website. Fuer eine "
+            "rechtssichere Bewertung ziehen Sie bitte eine Datenschutzbeauftragte oder einen Anwalt hinzu.",
+            s["small"]))
 
 
-# =============================================================================
-# CONVENIENCE
-# =============================================================================
-
-def generate_report(scan_data, filepath: str):
-    """PDF-Report aus Scan-Daten (dict oder ScanResult) generieren."""
-    data = scan_data.to_dict() if hasattr(scan_data, "to_dict") else (scan_data if isinstance(scan_data, dict) else scan_data.__dict__)
-    report = DSGVOReportPDF(data)
-    report.build(filepath)
+def generate_report(scan_data, filepath: str, full: bool = False):
+    data = scan_data.to_dict() if hasattr(scan_data, "to_dict") else (
+        scan_data if isinstance(scan_data, dict) else scan_data.__dict__)
+    DSGVOReportPDF(data).build(filepath, full=full)
     return filepath
 
 
-# Alias for backward and forward compatibility
 generate_pdf_report = generate_report
-
