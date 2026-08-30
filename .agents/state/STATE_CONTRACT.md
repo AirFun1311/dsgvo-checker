@@ -91,3 +91,4 @@ weil das Schema (siehe JSON-Schema) schon steht.
 | `STATE_CONTRACT.md` | Dieser Vertrag |
 | `session-state.schema.json` | JSON-Schema (Validierung) des Boot-/State-Objekts |
 | `session-state.example.json` | Beispielzustand nach ein paar Schritten |
+| `journal.py` | Lauffaehige Referenz: JSON-State + SQLite-Journal (WAL, mehr-schreiber-sicher) + Self-Healing. `python journal.py --selftest` demonstriert Absturz und Wiederaufsetzen. |
