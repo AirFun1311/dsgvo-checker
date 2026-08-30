@@ -22,7 +22,8 @@ Ein Linux-/Server-Pfad ist ebenfalls enthalten.
 | `scripts/setup-grok.sh` | Einrichtung auf Linux/Server | Ja |
 | `scripts/grok-guard.sh` | Optionaler PreToolUse-Sicherheits-Hook | Ja |
 | `scripts/grok-bootstrap.ps1` | DSF-Bootstrap: legt `~/.grok/{agents,skills,audit}` an, sammelt System-Audit, erzeugt DSF Commander + Inspektions-Skill | Ja |
-| `.grok/skills/dsf-system-inspection/SKILL.md` | Projektweiter, versionierter Inspektions-Skill (via `/skills`) | Ja |
+| `.agents/skills/dsf-system-inspection/SKILL.md` | Projektweiter Inspektions-Skill (via `/skills`), gelesen von Grok **und** Antigravity | Ja |
+| `.agents/SWARM.md` | Gesamtbild des Multi-Modell-Agenten-Schwarms (inkl. Antigravity-Einbindung) | Ja |
 
 ---
 
@@ -153,7 +154,7 @@ je nach Grok-CLI-Version variiert.
 | :--- | :--- |
 | `CLAUDE.md` | `AGENTS.md` |
 | Subagents | `subAgents` in `user-settings.json` |
-| Skills | `~/.grok/skills/<name>/SKILL.md` (global) bzw. `.grok/skills/` (Projekt), Liste ueber `/skills` |
+| Skills | `.agents/skills/<name>/SKILL.md` (gemeinsam mit Antigravity) bzw. `~/.grok/skills/` (global), Liste ueber `/skills` |
 | MCP-Server | `mcpServers` in `.grok/settings.json` (identisches MCP-Protokoll) |
 | Hooks | `hooks` in `user-settings.json` |
 | Settings | `~/.grok/user-settings.json` + `.grok/settings.json` |

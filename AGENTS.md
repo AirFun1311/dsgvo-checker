@@ -1,8 +1,19 @@
-# AGENTS.md - Projektanweisungen fuer KI-Agenten (Grok-CLI)
+# AGENTS.md - Projektanweisungen fuer KI-Agenten
 
-Diese Datei wird von der Grok-CLI automatisch gelesen und in den System-Prompt
-eingebunden (hierarchisch von der Git-Wurzel bis zum aktuellen Verzeichnis).
-Sie gilt fuer alle Agenten, die in diesem Repository arbeiten.
+Diese Datei wird von agentenbasierten Tools automatisch gelesen und in den
+System-Prompt eingebunden - bei **Grok Build (Grok-CLI)** hierarchisch von der
+Git-Wurzel bis zum aktuellen Verzeichnis, und bei **Google Antigravity** beim
+Mounten des Workspaces in die Sandbox. Sie gilt fuer alle Agenten, die in
+diesem Repository arbeiten.
+
+## Agenten-Schwarm (DSF)
+
+Der **DSF Commander ist ein Mensch** (der Betreiber). Die KI-Modelle
+(Gemini 3.1 Pro High, Claude Opus/Sonnet 4.6, Grok Heavy/Light, DeepSeek V4,
+Qwen 32B) arbeiten als Schwarm unter seiner Leitung. Das Gesamtbild inkl.
+Rollen und Antigravity-Einbindung steht in `.agents/SWARM.md`.
+Gemeinsame Quelle der Wahrheit fuer alle Modelle: **diese `AGENTS.md`** plus
+die Skills unter **`.agents/skills/`** (von Grok Build und Antigravity gelesen).
 
 ## Projektueberblick
 
