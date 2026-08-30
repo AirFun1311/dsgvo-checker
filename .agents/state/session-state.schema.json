@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dsf/agents/state/session-state.schema.json",
+  "title": "DSF Agent Session State",
+  "description": "Gemeinsamer Boot-/State-Contract. Jeder Agent liest dieses Objekt beim Start und schreibt seine Schritte fort. Enthaelt niemals Secrets - nur Referenzen (Env-Var-Namen).",
+  "type": "object",
+  "required": ["schema_version", "session_id", "updated_at", "agents", "journal"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version dieses Schemas, z. B. '1.0'."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Eindeutige ID des Gesamtlaufs (z. B. UUID)."
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "commander": {
+      "type": "object",
+      "description": "Der menschliche DSF Commander (Betreiber).",
+      "additionalProperties": false,
+      "properties": {
+        "human": { "type": "boolean", "const": true },
+        "name": { "type": "string" }
+      }
+    },
+    "last_good_checkpoint": {
+      "type": "string",
+      "description": "ID des letzten verifizierten Checkpoints (fuer Self-Healing)."
+    },
+    "agents": {
+      "type": "array",
+      "description": "Aktive Agenten im Schwarm und ihr Zustand.",
+      "items": {
+        "type": "object",
+        "required": ["name", "model", "model_version", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "z. B. dsf-commander, dsgvo-reviewer" },
+          "model": { "type": "string", "description": "z. B. gemini-3.1-pro, claude-opus-4-6, grok, qwen-32b, deepseek-v4" },
+          "model_version": { "type": "string", "description": "Exakte Revision (Reproduzierbarkeit) - nie 'latest'." },
+          "runtime": { "type": "string", "enum": ["antigravity", "grok-cli", "cloud-sandbox", "api", "other"] },
+          "role": { "type": "string" },
+          "temperature": { "type": "number", "minimum": 0 },
+          "seed": { "type": ["integer", "null"] },
+          "status": { "type": "string", "enum": ["idle", "in_progress", "done", "failed"] },
+          "current_task": { "type": "string" }
+        }
+      }
+    },
+    "journal": {
+      "type": "array",
+      "description": "Append-only Ereignisprotokoll (Zero-Trust: alles wird geloggt). Bei mehreren gleichzeitigen Schreibern SQLite statt gemeinsamer JSON-Datei verwenden.",
+      "items": {
+        "type": "object",
+        "required": ["ts", "agent", "action", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "ts": { "type": "string", "format": "date-time" },
+          "agent": { "type": "string" },
+          "model": { "type": "string" },
+          "model_version": { "type": "string" },
+          "action": { "type": "string", "description": "Was wurde getan." },
+          "inputs_ref": { "type": "string", "description": "Referenz auf Eingaben/Kontext (Pfad/Hash), keine Secrets." },
+          "result": { "type": "string", "description": "Kurzergebnis." },
+          "verified_by": { "type": "string", "description": "Wer/was hat verifiziert (Zero-Trust). Leer = unverifiziert." },
+          "status": { "type": "string", "enum": ["in_progress", "done", "failed", "recovered"] },
+          "checkpoint": { "type": "boolean", "description": "true = verifizierter, sicherer Wiederaufsetzpunkt." },
+          "error": { "type": "string" },
+          "next_step": { "type": "string" }
+        }
+      }
+    }
+  }
+}
