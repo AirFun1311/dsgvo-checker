@@ -21,6 +21,8 @@ Ein Linux-/Server-Pfad ist ebenfalls enthalten.
 | `scripts/setup-grok.ps1` | Einrichtung auf Windows ARM64 | Ja |
 | `scripts/setup-grok.sh` | Einrichtung auf Linux/Server | Ja |
 | `scripts/grok-guard.sh` | Optionaler PreToolUse-Sicherheits-Hook | Ja |
+| `scripts/grok-bootstrap.ps1` | DSF-Bootstrap: legt `~/.grok/{agents,skills,audit}` an, sammelt System-Audit, erzeugt DSF Commander + Inspektions-Skill | Ja |
+| `.grok/skills/dsf-system-inspection/SKILL.md` | Projektweiter, versionierter Inspektions-Skill (via `/skills`) | Ja |
 
 ---
 
@@ -47,6 +49,20 @@ grok
 
 Das Setup-Skript ist **idempotent** und ueberschreibt eine vorhandene
 `~/.grok/user-settings.json` nicht.
+
+### DSF-Bootstrap (System-Audit + Agenten/Skills anlegen)
+
+Ergaenzend richtet `scripts/grok-bootstrap.ps1` die DSF-Umgebung ein:
+legt `~/.grok/{agents,skills,audit}` an, schreibt ein reines System-Audit
+(ohne Secrets) nach `~/.grok/audit/` und erzeugt den DSF Commander sowie
+den Inspektions-Skill.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\grok-bootstrap.ps1
+```
+
+Erzeugte Audit-Dateien: `system.json`, `tools.json`, `grok.json`,
+`grok-files.json`, `ENVIRONMENT.md`. Es werden keine NEXUS-Dateien veraendert.
 
 > Hinweis ARM64: Installiere moeglichst die **native ARM64-Version** von
 > Node.js (oder nutze Bun). Eine x64-emulierte Laufzeit funktioniert, ist
@@ -85,9 +101,15 @@ TUI mit `/agents`. Diese Vorlage bringt drei mit:
 
 | Agent | Aufgabe |
 | :--- | :--- |
+| `dsf-commander` | Primaerer Orchestrierungs-Agent (plant, delegiert, verifiziert) |
 | `dsgvo-reviewer` | Prueft Rechtszuordnung der Scan-Logik (DSGVO, TDDDG, Urteile) |
 | `security-review` | Sicherheits-Review (TLS, Header, Secrets, Injection) |
 | `test-writer` | Schreibt/erweitert pytest-Tests in `tests/` |
+
+Hinweis: `scripts/grok-bootstrap.ps1` legt den DSF Commander zusaetzlich als
+`~/.grok/agents/dsf-commander.md` ab. Ob die installierte Grok-CLI-Version
+Agenten aus diesem Ordner automatisch laedt, ist versionsabhaengig - deshalb
+ist der Commander hier zusaetzlich als `subAgent` registriert (laedt zuverlaessig).
 
 Reservierte Namen (nicht verwendbar): `general`, `explore`, `vision`,
 `verify`, `computer`.
@@ -131,7 +153,7 @@ je nach Grok-CLI-Version variiert.
 | :--- | :--- |
 | `CLAUDE.md` | `AGENTS.md` |
 | Subagents | `subAgents` in `user-settings.json` |
-| Skills | kein eigenes Konstrukt - abbildbar ueber `subAgents` + MCP + `AGENTS.md` |
+| Skills | `~/.grok/skills/<name>/SKILL.md` (global) bzw. `.grok/skills/` (Projekt), Liste ueber `/skills` |
 | MCP-Server | `mcpServers` in `.grok/settings.json` (identisches MCP-Protokoll) |
 | Hooks | `hooks` in `user-settings.json` |
 | Settings | `~/.grok/user-settings.json` + `.grok/settings.json` |
