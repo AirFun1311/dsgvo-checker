@@ -15,7 +15,7 @@ def test_cli_help_flag():
         cwd=str(repo_root),
     )
     assert result.returncode == 0
-    assert "DSF DSGVO / GDPR Compliance Scanner" in result.stdout
+    assert "DSGVO-Checker - Datenschutz-Pruefung fuer Websites" in result.stdout
     assert "--no-js" in result.stdout
     assert "--pdf" in result.stdout
     assert "--json" in result.stdout
