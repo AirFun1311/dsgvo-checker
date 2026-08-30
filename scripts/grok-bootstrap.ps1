@@ -1,16 +1,58 @@
+#Requires -Version 5.1
 # ============================================================
 # DSF / GROK BUILD - AGENT BOOTSTRAP
 # Target: Windows ARM64 / Snapdragon X Elite
 # Purpose: Prepare Grok Build agent environment
 # Does NOT modify NEXUS.
+# ------------------------------------------------------------
+# Eigenschaften:
+#  - Nicht-destruktiv: vorhandene Agent-/Skill-Dateien werden NICHT
+#    ueberschrieben (Hand-Edits bleiben erhalten).
+#  - Einzige Quelle der Wahrheit: Agent/Skill werden aus .agents/ KOPIERT,
+#    nicht im Skript eingebettet (keine Drift).
+#  - Robust: eine fehlgeschlagene Teilpruefung bricht das Skript nicht ab;
+#    Fehler werden ins Audit geschrieben.
+#  - Reines Audit, niemals Secrets.
 # ============================================================
 
-$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
-$Root = Join-Path $HOME ".grok"
-$Agents = Join-Path $Root "agents"
-$Skills = Join-Path $Root "skills"
-$Audit  = Join-Path $Root "audit"
+# ------------------------------------------------------------
+# Pfade
+# ------------------------------------------------------------
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+$Root     = Join-Path $HOME ".grok"
+$Agents   = Join-Path $Root "agents"
+$Skills   = Join-Path $Root "skills"
+$Audit    = Join-Path $Root "audit"
+
+$SrcAgents = Join-Path $RepoRoot ".agents"
+$SrcSkills = Join-Path $SrcAgents "skills"
+
+function Write-Info($m) { Write-Host "[i] $m" -ForegroundColor Cyan }
+function Write-Ok($m)   { Write-Host "[+] $m" -ForegroundColor Green }
+function Write-Warn2($m){ Write-Host "[!] $m" -ForegroundColor Yellow }
+
+# Bereinigt Tool-Ausgaben: entfernt Null-Bytes (UTF-16 z. B. bei wsl) und
+# Steuerzeichen, nimmt die erste nicht-leere Zeile.
+function Get-CleanVersion {
+    param([string[]]$Lines)
+    $joined = ($Lines -join "`n") -replace "`0", ""
+    $clean  = ($joined -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" })
+    if ($clean.Count -gt 0) { return $clean[0] }
+    return "version unavailable"
+}
+
+# Schreibt ein Objekt als JSON ins Audit; Fehler werden nur gemeldet, nie fatal.
+function Save-Json($Object, $FileName) {
+    try {
+        $target = Join-Path $Audit $FileName
+        $Object | ConvertTo-Json -Depth 6 | Set-Content -Path $target -Encoding UTF8
+        Write-Ok "Audit: $FileName"
+    } catch {
+        Write-Warn2 "Konnte $FileName nicht schreiben: $($_.Exception.Message)"
+    }
+}
 
 Write-Host ""
 Write-Host "=============================================="
@@ -19,313 +61,181 @@ Write-Host "=============================================="
 Write-Host ""
 
 # ------------------------------------------------------------
-# 1. Create isolated Grok directories
+# 1. Isolierte Grok-Verzeichnisse anlegen
 # ------------------------------------------------------------
-
-$Directories = @(
-    $Root,
-    $Agents,
-    $Skills,
-    $Audit
-)
-
-foreach ($Directory in $Directories) {
+foreach ($Directory in @($Root, $Agents, $Skills, $Audit)) {
     if (-not (Test-Path $Directory)) {
         New-Item -ItemType Directory -Path $Directory -Force | Out-Null
     }
 }
 
 # ------------------------------------------------------------
-# 2. Basic system information
+# 2. Basis-Systeminformationen (gezielte CIM-Abfragen statt Get-ComputerInfo)
 # ------------------------------------------------------------
-
-$System = Get-ComputerInfo
-
 $Report = [ordered]@{
-    Timestamp          = Get-Date
-    ComputerName       = $env:COMPUTERNAME
-    User               = $env:USERNAME
-    OS                 = $System.WindowsProductName
-    WindowsVersion     = $System.WindowsVersion
-    Build              = $System.OsBuildNumber
-    Architecture       = $System.OsArchitecture
-    Processor          = $System.CsProcessors.Name
-    Model              = $System.CsModel
-    RAM_GB             = [math]::Round(
-        $System.CsTotalPhysicalMemory / 1GB, 2
-    )
-    PowerShell         = $PSVersionTable.PSVersion.ToString()
+    Timestamp    = (Get-Date).ToString("s")
+    ComputerName = $env:COMPUTERNAME
+    User         = $env:USERNAME
+    OS           = $null
+    Version      = $null
+    Build        = $null
+    Architecture = $null
+    Processor    = $null
+    Cores        = $null
+    Model        = $null
+    RAM_GB       = $null
+    PowerShell   = $PSVersionTable.PSVersion.ToString()
 }
-
-$Report | ConvertTo-Json -Depth 5 |
-    Set-Content (Join-Path $Audit "system.json") -Encoding UTF8
+try {
+    $os  = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
+    $cpu = Get-CimInstance Win32_Processor -ErrorAction Stop | Select-Object -First 1
+    $cs  = Get-CimInstance Win32_ComputerSystem -ErrorAction Stop
+    $Report.OS           = $os.Caption
+    $Report.Version      = $os.Version
+    $Report.Build        = $os.BuildNumber
+    $Report.Architecture = $os.OSArchitecture
+    $Report.Processor    = $cpu.Name
+    $Report.Cores        = $cpu.NumberOfCores
+    $Report.Model        = $cs.Model
+    $Report.RAM_GB       = [math]::Round($cs.TotalPhysicalMemory / 1GB, 2)
+} catch {
+    Write-Warn2 "Systeminfo teilweise nicht verfuegbar: $($_.Exception.Message)"
+    $Report.OS = "unavailable: $($_.Exception.Message)"
+}
+Save-Json $Report "system.json"
 
 # ------------------------------------------------------------
-# 3. Detect development environment
+# 3. Entwicklungsumgebung erkennen
 # ------------------------------------------------------------
-
-$Commands = @(
-    "grok",
-    "git",
-    "gh",
-    "node",
-    "npm",
-    "python",
-    "wsl",
-    "code"
-)
-
+$Commands = @("grok", "git", "gh", "node", "npm", "python", "wsl", "code")
 $Tools = foreach ($Command in $Commands) {
-
     $Result = Get-Command $Command -ErrorAction SilentlyContinue
-
     if ($Result) {
-
-        $Version = try {
-            & $Command --version 2>&1 |
-                Select-Object -First 1 |
-                Out-String
+        $isStoreStub = ($Result.Source -like "*\WindowsApps\*") -and ($Command -eq "python")
+        if ($isStoreStub) {
+            $version = "NOT INSTALLED (Windows-Store-Alias)"
+        } else {
+            try {
+                $raw = & $Command --version 2>&1
+                $version = Get-CleanVersion ($raw | ForEach-Object { "$_" })
+            } catch {
+                $version = "version unavailable"
+            }
         }
-        catch {
-            "version unavailable"
-        }
-
-        [PSCustomObject]@{
-            Command = $Command
-            Path    = $Result.Source
-            Version = $Version.Trim()
-        }
-
+        [PSCustomObject]@{ Command = $Command; Path = $Result.Source; Version = $version }
     } else {
-
-        [PSCustomObject]@{
-            Command = $Command
-            Path    = $null
-            Version = "NOT FOUND"
-        }
+        [PSCustomObject]@{ Command = $Command; Path = $null; Version = "NOT FOUND" }
     }
 }
-
-$Tools |
-    ConvertTo-Json -Depth 5 |
-    Set-Content (Join-Path $Audit "tools.json") -Encoding UTF8
+Save-Json $Tools "tools.json"
 
 # ------------------------------------------------------------
-# 4. Inspect existing Grok installation
+# 4. Vorhandene Grok-Installation pruefen
 # ------------------------------------------------------------
-
 $GrokState = [ordered]@{
-    GrokCommand = $null
+    GrokCommand = $false
     GrokPath    = $null
     GrokVersion = $null
     GrokHome    = $env:GROK_HOME
     DotGrok     = $Root
 }
-
 $GrokCommand = Get-Command grok -ErrorAction SilentlyContinue
-
 if ($GrokCommand) {
-
     $GrokState.GrokCommand = $true
-    $GrokState.GrokPath = $GrokCommand.Source
-
+    $GrokState.GrokPath    = $GrokCommand.Source
     try {
-        $GrokState.GrokVersion =
-            (& grok --version 2>&1 | Out-String).Trim()
-    }
-    catch {
+        $GrokState.GrokVersion = Get-CleanVersion ((& grok --version 2>&1) | ForEach-Object { "$_" })
+    } catch {
         $GrokState.GrokVersion = "version unavailable"
     }
-
-} else {
-
-    $GrokState.GrokCommand = $false
 }
-
-$GrokState |
-    ConvertTo-Json -Depth 5 |
-    Set-Content (Join-Path $Audit "grok.json") -Encoding UTF8
+Save-Json $GrokState "grok.json"
 
 # ------------------------------------------------------------
-# 5. Existing Grok configuration inventory
+# 5. Inventar vorhandener Grok-Konfiguration
 # ------------------------------------------------------------
-
 $Inventory = @()
+try {
+    if (Test-Path $Root) {
+        $Inventory = @(Get-ChildItem -Path $Root -Recurse -Force -File -ErrorAction SilentlyContinue |
+            Select-Object FullName, Length, LastWriteTime)
+    }
+} catch {
+    Write-Warn2 "Inventar unvollstaendig: $($_.Exception.Message)"
+}
+Save-Json $Inventory "grok-files.json"
 
-if (Test-Path $Root) {
-
-    $Inventory = Get-ChildItem `
-        -Path $Root `
-        -Recurse `
-        -Force `
-        -File `
-        -ErrorAction SilentlyContinue |
-        Select-Object FullName, Length, LastWriteTime
+# ------------------------------------------------------------
+# 6. Agent + Skill aus .agents/ KOPIEREN (nicht ueberschreiben, nicht einbetten)
+# ------------------------------------------------------------
+function Copy-IfAbsent($SourcePath, $TargetPath, $Label) {
+    if (-not (Test-Path $SourcePath)) {
+        Write-Warn2 "Quelle fehlt, uebersprungen ($Label): $SourcePath"
+        return
+    }
+    if (Test-Path $TargetPath) {
+        Write-Warn2 "Vorhanden - NICHT ueberschrieben ($Label): $TargetPath"
+        return
+    }
+    $parent = Split-Path -Parent $TargetPath
+    if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
+    Copy-Item -Path $SourcePath -Destination $TargetPath -Force
+    Write-Ok "Kopiert ($Label): $TargetPath"
 }
 
-$Inventory |
-    ConvertTo-Json -Depth 5 |
-    Set-Content (Join-Path $Audit "grok-files.json") -Encoding UTF8
-
-# ------------------------------------------------------------
-# 6. Create a SAFE Commander agent
-# ------------------------------------------------------------
-
-$Commander = @'
 # DSF Commander
+Copy-IfAbsent (Join-Path $SrcAgents "dsf-commander.md") `
+              (Join-Path $Agents "dsf-commander.md") "Agent"
 
-You are the primary orchestration agent for the DSF Grok environment.
-
-## Mission
-
-Turn user objectives into verified, executable work.
-
-## Operating rules
-
-1. Understand the requested objective before acting.
-2. Inspect the available environment before making assumptions.
-3. Prefer existing tools, repositories, skills and agents over duplicating them.
-4. Plan complex tasks before execution.
-5. Keep changes scoped to the requested task.
-6. Never expose API keys, tokens, passwords or credentials.
-7. Never delete or overwrite important data without explicit authorization.
-8. After making changes, verify the result.
-9. If a task fails, diagnose the failure and attempt a safe correction.
-10. Report exactly what was changed and what remains unresolved.
-
-## Delegation
-
-Use specialized agents or skills when available.
-
-Typical delegation:
-
-- Research → research capabilities
-- Programming → coding capabilities
-- System administration → system capabilities
-- Security → security capabilities
-- Git/GitHub → repository capabilities
-
-## Completion standard
-
-A task is not complete merely because an action was attempted.
-
-A task is complete when there is reasonable evidence that the requested result exists and works.
-'@
-
-$Commander |
-    Set-Content `
-        (Join-Path $Agents "dsf-commander.md") `
-        -Encoding UTF8
-
-# ------------------------------------------------------------
-# 7. Create a system inspection skill
-# ------------------------------------------------------------
-
-$SystemSkill = @'
----
-name: dsf-system-inspection
-description: Inspect the local machine, development environment and Grok installation safely. Use when system state, versions, architecture, paths or installed tools need to be verified.
----
-
-# DSF System Inspection
-
-Inspect before modifying.
-
-Collect:
-
-- operating system
-- architecture
-- CPU
-- memory
-- disk
-- PowerShell
-- Git
-- GitHub CLI
-- Node
-- Python
-- WSL
-- VS Code
-- Grok Build
-
-Never collect secrets.
-
-Never print:
-
-- API keys
-- authentication tokens
-- passwords
-- private keys
-- credential files
-
-Write diagnostic output only to the designated audit directory.
-'@
-
-$SkillDir = Join-Path $Skills "dsf-system-inspection"
-
-if (-not (Test-Path $SkillDir)) {
-    New-Item -ItemType Directory -Path $SkillDir -Force | Out-Null
+# Skills (jeder Unterordner mit SKILL.md)
+if (Test-Path $SrcSkills) {
+    foreach ($skillDir in (Get-ChildItem -Path $SrcSkills -Directory -ErrorAction SilentlyContinue)) {
+        $src = Join-Path $skillDir.FullName "SKILL.md"
+        $dst = Join-Path (Join-Path $Skills $skillDir.Name) "SKILL.md"
+        Copy-IfAbsent $src $dst "Skill: $($skillDir.Name)"
+    }
+} else {
+    Write-Warn2 "Kein Quell-Skills-Ordner: $SrcSkills"
 }
 
-$SystemSkill |
-    Set-Content `
-        (Join-Path $SkillDir "SKILL.md") `
-        -Encoding UTF8
-
 # ------------------------------------------------------------
-# 8. Create an environment manifest
+# 7. Umgebungs-Manifest
 # ------------------------------------------------------------
-
 $Manifest = @"
 # DSF Grok Environment
 
-Created: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-
+Created: $((Get-Date).ToString("yyyy-MM-dd HH:mm:ss"))
 Host: $env:COMPUTERNAME
 
-Architecture:
-$($System.OsArchitecture)
+Architecture: $($Report.Architecture)
+Windows:      $($Report.OS) $($Report.Version) (Build $($Report.Build))
+Processor:    $($Report.Processor)
+RAM:          $($Report.RAM_GB) GB
 
-Windows:
-$($System.WindowsProductName)
-$($System.WindowsVersion)
-Build $($System.OsBuildNumber)
-
-Processor:
-$($System.CsProcessors.Name)
-
-RAM:
-$([math]::Round($System.CsTotalPhysicalMemory / 1GB,2)) GB
-
-Grok Home:
-$($env:GROK_HOME)
-
-Grok Config Root:
-$Root
+Grok Home:        $($env:GROK_HOME)
+Grok Config Root: $Root
 
 This file contains no credentials.
 "@
-
-$Manifest |
-    Set-Content `
-        (Join-Path $Audit "ENVIRONMENT.md") `
-        -Encoding UTF8
+try {
+    $Manifest | Set-Content -Path (Join-Path $Audit "ENVIRONMENT.md") -Encoding UTF8
+    Write-Ok "Audit: ENVIRONMENT.md"
+} catch {
+    Write-Warn2 "Konnte ENVIRONMENT.md nicht schreiben: $($_.Exception.Message)"
+}
 
 # ------------------------------------------------------------
-# 9. Final output
+# 8. Abschluss
 # ------------------------------------------------------------
-
 Write-Host ""
 Write-Host "BOOTSTRAP COMPLETE"
 Write-Host ""
-Write-Host "Grok directory:"
-Write-Host "  $Root"
+Write-Host "Grok directory: $Root"
+Write-Host "Audit:          $Audit"
 Write-Host ""
-Write-Host "Audit:"
-Write-Host "  $Audit"
-Write-Host ""
-Write-Host "Created:"
-Write-Host "  ~/.grok/agents/dsf-commander.md"
-Write-Host "  ~/.grok/skills/dsf-system-inspection/SKILL.md"
+Write-Host "Quelle (Single Source of Truth): $SrcAgents"
+Write-Host "  -> ~/.grok/agents/dsf-commander.md"
+Write-Host "  -> ~/.grok/skills/<name>/SKILL.md"
 Write-Host ""
 Write-Host "NO NEXUS FILES WERE MODIFIED."
 Write-Host ""

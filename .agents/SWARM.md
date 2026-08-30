@@ -64,5 +64,6 @@ Aufgabe das passende Modell gewaehlt werden.
 | Skills | `.agents/skills/<name>/SKILL.md` | Grok Build, Antigravity |
 | Grok-spezifische Config | `.grok/settings.json`, `~/.grok/user-settings.json` | Grok Build |
 | Machine-Bootstrap | `scripts/grok-bootstrap.ps1` | manuell (Windows ARM64) |
+| State/Persistenz/Zero-Trust | `.agents/state/STATE_CONTRACT.md` (+ Schema/Beispiel) | alle Agenten (gemeinsames Journal) |
 
 NEXUS bleibt unveraendert - diese Dateien beschreiben nur den Agenten-Kontext.
